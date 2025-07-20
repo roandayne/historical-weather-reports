@@ -1,0 +1,88 @@
+# Dependencies
+/frontend/node_modules/
+/backend/venv/
+/backend/.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+.flaskenv
+
+# Build outputs
+/frontend/dist/
+/frontend/build/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log
+*.log
+
+# Testing
+/frontend/coverage/
+.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Cache directories
+.npm
+.eslintcache
+.stylelintcache
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Python specific
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+*.mo
+*.pot
+
+# TypeScript specific
+*.tsbuildinfo
+next-env.d.ts
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+.tmp/ 

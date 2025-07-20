@@ -1,0 +1,10 @@
+Flask
+meteostat
+pandas
+matplotlib
+fpdf
+openpyxl 
+geopy 
+cartopy 
+xlsxwriter 
+flask-cors 
