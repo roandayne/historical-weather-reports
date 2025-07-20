@@ -1,11 +1,10 @@
-import { Box, Button, Paper, TextField, Typography, InputAdornment, IconButton, Autocomplete } from '@mui/material'
+import { Box, Button, Paper, TextField, Typography, InputAdornment, IconButton, Autocomplete, Alert, Snackbar } from '@mui/material'
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useState, useEffect } from 'react';
 import axios, { AxiosError } from 'axios';
 import { useMutation } from '@tanstack/react-query';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Dayjs } from 'dayjs';
-import type { ChangeEvent } from 'react';
 
 interface PlaceType {
   display_name: string;
@@ -17,6 +16,10 @@ interface WeatherData {
   location: string;
   startDate: string;
   endDate: string;
+}
+
+interface ErrorResponse {
+  message: string;
 }
 
 interface WeatherResponse {
@@ -34,6 +37,7 @@ const GenerateReports = () => {
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
   const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState<{type: 'success' | 'error', message: string} | null>(null);
 
   const downloadFile = async (filename: string) => {
     const response = await axios.get(`/api/download/${filename}`, {
@@ -49,7 +53,7 @@ const GenerateReports = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  const mutation = useMutation<WeatherResponse, AxiosError, WeatherData>({
+  const mutation = useMutation<WeatherResponse, AxiosError<ErrorResponse>, WeatherData>({
     mutationFn: (data: WeatherData) => {
       return axios.post('/api/weather-data', data);
     },
@@ -57,12 +61,15 @@ const GenerateReports = () => {
       try {
         await downloadFile(response.data.pdf_report);
         await downloadFile(response.data.excel_report);
+        setAlert({ type: 'success', message: 'Reports generated and downloaded successfully!' });
       } catch (error) {
         console.error('Error downloading files:', error);
+        setAlert({ type: 'error', message: 'Error downloading files. Please try again.' });
       }
     },
-    onError: (error: AxiosError) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       console.error('Error generating report:', error);
+      setAlert({ type: 'error', message: error.response?.data?.message || 'Error generating report. Please try again.' });
     },
   });
 
@@ -169,6 +176,15 @@ const GenerateReports = () => {
       justifyContent: 'center',
       width: {xs:'100%', sm:'65%'},
     }}>
+        <Snackbar
+          open={!!alert}
+          autoHideDuration={2000}
+          onClose={() => setAlert(null)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert severity={alert?.type}>{alert?.message}</Alert>
+        </Snackbar>
+          
         <Box sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -202,7 +218,7 @@ const GenerateReports = () => {
               loading={loading}
               value={location}
               noOptionsText={inputValue.length < 3 ? "Type at least 3 characters" : "No locations found"}
-              onChange={(event: any, newValue: PlaceType | string | null) => {
+              onChange={(_event: any, newValue: PlaceType | string | null) => {
                 if (typeof newValue === 'string') {
                   setLocation(newValue);
                 } else if (newValue) {
@@ -211,7 +227,7 @@ const GenerateReports = () => {
                   setLocation('');
                 }
               }}
-              onInputChange={(event, newInputValue) => {
+              onInputChange={(_event, newInputValue) => {
                 setInputValue(newInputValue);
               }}
               freeSolo
