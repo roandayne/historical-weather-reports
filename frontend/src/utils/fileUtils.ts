@@ -1,14 +1,9 @@
-import axios from 'axios';
-import { API_CONFIG, API_ENDPOINTS, ERROR_MESSAGES } from '../constants';
-
-const api = axios.create({
-  timeout: API_CONFIG.FILE_DOWNLOAD_TIMEOUT,
-  headers: API_CONFIG.DEFAULT_HEADERS
-});
+import { API_ENDPOINTS, ERROR_MESSAGES } from '../constants';
+import { fileClient } from '../services/axiosConfig';
 
 export const downloadFile = async (filename: string): Promise<void> => {
   try {
-    const response = await api.get(`${API_ENDPOINTS.DOWNLOAD}/${filename}`, {
+    const response = await fileClient.get(`${API_ENDPOINTS.DOWNLOAD}/${filename}`, {
       responseType: 'blob'
     });
     
@@ -21,18 +16,6 @@ export const downloadFile = async (filename: string): Promise<void> => {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.code === 'ECONNABORTED') {
-        throw new Error(ERROR_MESSAGES.NETWORK.TIMEOUT);
-      }
-      if (error.response) {
-        const message = error.response.data?.message || `Server error (${error.response.status}): Failed to download file`;
-        throw new Error(message);
-      }
-      if (error.request) {
-        throw new Error(ERROR_MESSAGES.NETWORK.NO_RESPONSE);
-      }
-    }
     if (error instanceof Error) {
       throw new Error(`${ERROR_MESSAGES.FILE.DOWNLOAD_FAILED}: ${error.message}`);
     }

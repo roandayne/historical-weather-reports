@@ -2,7 +2,7 @@ import { Box, FormControl, InputLabel, MenuItem, Select, ToggleButton, ToggleBut
 import { DatePicker } from '@mui/x-date-pickers';
 import { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useState, type FC, type MouseEvent } from 'react';
 
 interface DateRangePickerProps {
   startDate: Dayjs | null;
@@ -13,12 +13,12 @@ interface DateRangePickerProps {
 
 type FilterType = 'custom' | 'year' | 'month';
 
-export const DateRangePicker = ({
+export const DateRangePicker: FC<DateRangePickerProps> = ({
   startDate,
   endDate,
   onStartDateChange,
   onEndDateChange
-}: DateRangePickerProps) => {
+}) => {
   const [filterType, setFilterType] = useState<FilterType>('custom');
   const currentYear = dayjs().year();
   const years = Array.from({ length: 11 }, (_, i) => currentYear - i);
@@ -30,7 +30,7 @@ export const DateRangePicker = ({
     };
   });
 
-  const handleFilterTypeChange = (_: React.MouseEvent<HTMLElement>, newFilterType: FilterType | null) => {
+  const handleFilterTypeChange = (_: MouseEvent<HTMLElement>, newFilterType: FilterType | null) => {
     if (newFilterType) {
       setFilterType(newFilterType);
       onStartDateChange(null);

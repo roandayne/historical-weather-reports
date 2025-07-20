@@ -1,6 +1,7 @@
 import { Autocomplete, TextField, InputAdornment, IconButton, Box, Typography } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { UI_CONFIG } from '../constants';
+import type { ChangeEvent, FC } from 'react';
 
 interface PlaceType {
   display_name: string;
@@ -18,7 +19,7 @@ interface LocationAutocompleteProps {
   onUseMyLocation: () => void;
 }
 
-export const LocationAutocomplete = ({
+export const LocationAutocomplete: FC<LocationAutocompleteProps> = ({
   location,
   inputValue,
   options,
@@ -26,7 +27,7 @@ export const LocationAutocomplete = ({
   onLocationChange,
   onInputChange,
   onUseMyLocation
-}: LocationAutocompleteProps) => {
+}) => {
   const renderOption = (props: any, option: string | PlaceType) => (
     <li {...props}>
       <LocationOnIcon sx={{ mr: 2, color: 'text.secondary' }} />
@@ -52,7 +53,7 @@ export const LocationAutocomplete = ({
       loading={loading}
       value={location}
       noOptionsText={inputValue.length < UI_CONFIG.MIN_SEARCH_LENGTH ? `Type at least ${UI_CONFIG.MIN_SEARCH_LENGTH} characters` : "No locations found"}
-      onChange={(_event: any, newValue: PlaceType | string | null) => onLocationChange(newValue)}
+      onChange={(_event: ChangeEvent<{}>, newValue: PlaceType | string | null) => onLocationChange(newValue)}
       onInputChange={(_event, newValue) => onInputChange(newValue)}
       freeSolo
       renderInput={(params) => (

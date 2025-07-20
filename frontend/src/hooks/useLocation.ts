@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import type { AlertState } from './useAlert';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from './useDebounce';
-import { API_CONFIG, API_ENDPOINTS, UI_CONFIG, ERROR_MESSAGES } from '../constants';
+import { API_ENDPOINTS, UI_CONFIG, ERROR_MESSAGES } from '../constants';
+import { apiClient } from '../services/axiosConfig';
 
 interface PlaceType {
   display_name: string;
@@ -15,11 +15,6 @@ interface Coordinates {
   lat: number;
   lon: number;
 }
-
-const api = axios.create({
-  timeout: API_CONFIG.DEFAULT_TIMEOUT,
-  headers: API_CONFIG.DEFAULT_HEADERS
-});
 
 export const useLocation = (showAlert: (type: AlertState['type'], message: string) => void) => {
   const [location, setLocation] = useState('');
@@ -33,7 +28,7 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
     queryFn: async () => {
       if (!coordinates) return null;
       try {
-        const response = await api.get(API_ENDPOINTS.REVERSE_GEOCODE, {
+        const response = await apiClient.get(API_ENDPOINTS.REVERSE_GEOCODE, {
           params: { lat: coordinates.lat, lon: coordinates.lon }
         });
         return response.data;
@@ -60,7 +55,7 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
     queryFn: async () => {
       if (debouncedInput.length < UI_CONFIG.MIN_SEARCH_LENGTH) return [];
       try {
-        const response = await api.get<PlaceType[]>(API_ENDPOINTS.GEOCODE, {
+        const response = await apiClient.get<PlaceType[]>(API_ENDPOINTS.GEOCODE, {
           params: { q: debouncedInput }
         });
         return response.data;
