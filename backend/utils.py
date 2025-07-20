@@ -20,18 +20,14 @@ def normalize_request_data(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if request.is_json:
-            # Get the original JSON data
             json_data = request.get_json(force=True)
             if json_data:
-                # Convert the data
                 converted_data = convert_keys(json_data)
-                # Override the request's get_json method to return our converted data
                 def new_get_json(*args, **kwargs):
                     return converted_data
                 request.get_json = new_get_json
         
         if request.args:
-            # Convert query parameters
             kwargs.update({
                 camel_to_snake(key): value
                 for key, value in request.args.items()

@@ -56,7 +56,7 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
     <Box sx={{
       display: 'flex',
       flexDirection: 'column',
-      gap: '20px',
+      gap: '10px',
       width: '100%',
     }}>
       <ToggleButtonGroup
@@ -65,6 +65,15 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
         onChange={handleFilterTypeChange}
         aria-label="filter type"
         fullWidth
+        sx={{
+          '& .MuiToggleButton-root': {
+            borderRadius: '12px !important',
+          },
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '10px',
+          width: '100%',
+        }}
       >
         <ToggleButton value="custom" aria-label="custom date range">
           Custom Range
@@ -85,13 +94,35 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
           width: '100%',
         }}>
           <DatePicker
-            sx={{ width: '100%' }}
+            sx={{ 
+              width: '100%',
+              '& .MuiInputBase-root': {
+                borderRadius: '12px'
+              },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '12px'
+              },
+              '& fieldset': {
+                borderRadius: '12px'
+              }
+            }}
             label="Start Date"
             value={startDate}
             onChange={onStartDateChange}
           />
           <DatePicker
-            sx={{ width: '100%' }}
+            sx={{ 
+              width: '100%',
+              '& .MuiInputBase-root': {
+                borderRadius: '12px'
+              },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '12px'
+              },
+              '& fieldset': {
+                borderRadius: '12px'
+              }
+            }}
             label="End Date"
             value={endDate}
             onChange={onEndDateChange}
@@ -108,6 +139,11 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
             label="Select Year"
             value={startDate ? startDate.year() : ''}
             onChange={(e) => handleYearChange(Number(e.target.value))}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '12px'
+              }
+            }}
           >
             {years.map((year) => (
               <MenuItem key={year} value={year}>
@@ -133,6 +169,11 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
               label="Select Year"
               value={startDate ? startDate.year() : ''}
               onChange={(e) => handleMonthYearChange(Number(e.target.value), startDate?.month() || 0)}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px'
+                }
+              }}
             >
               {years.map((year) => (
                 <MenuItem key={year} value={year}>
@@ -149,6 +190,11 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
               label="Select Month"
               value={startDate ? startDate.month() : ''}
               onChange={(e) => handleMonthYearChange(startDate?.year() || currentYear, Number(e.target.value))}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px'
+                }
+              }}
             >
               {months.map((month) => (
                 <MenuItem key={month.value} value={month.value}>

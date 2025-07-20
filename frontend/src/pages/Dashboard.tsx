@@ -8,6 +8,8 @@ const Dashboard = () => {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
+      width: '100%',
+      height: '100%',
     }}>
       <GenerateReports />
     </Box>

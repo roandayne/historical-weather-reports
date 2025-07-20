@@ -42,7 +42,12 @@ export const LocationAutocomplete: FC<LocationAutocompleteProps> = ({
   return (
     <Autocomplete
       id="location-autocomplete"
-      sx={{ width: '100%' }}
+      sx={{ 
+        width: '100%',
+        '& .MuiOutlinedInput-root': {
+          borderRadius: '12px'
+        }
+      }}
       getOptionLabel={(option: PlaceType | string) => 
         typeof option === 'string' ? option : option.display_name
       }
@@ -67,7 +72,13 @@ export const LocationAutocomplete: FC<LocationAutocompleteProps> = ({
               <>
                 {params.InputProps.endAdornment}
                 <InputAdornment position="end">
-                  <IconButton onClick={onUseMyLocation} color="secondary">
+                  <IconButton 
+                    onClick={onUseMyLocation} 
+                    color="secondary"
+                    sx={{
+                      borderRadius: '12px'
+                    }}
+                  >
                     <LocationOnIcon />
                   </IconButton>
                 </InputAdornment>

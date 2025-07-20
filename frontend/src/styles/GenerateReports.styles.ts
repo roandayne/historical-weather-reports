@@ -33,10 +33,10 @@ export const containerStyles: SxProps<Theme> = {
   width: '100%',
   maxWidth: '100vw',
   margin: 0,
-  height: '100vh',
+  minHeight: '100vh',
   padding: '40px 20px',
   boxSizing: 'border-box',
-  overflow: 'hidden',
+  overflow: 'auto',
   transition: 'all 0.3s ease',
   '& > *:not(:first-child)': {
     width: {xs: '90%', sm: '65%'},
@@ -47,12 +47,14 @@ export const containerStyles: SxProps<Theme> = {
 export const formPaperStyles: SxProps<Theme> = {
   width: '100%',
   backgroundColor: 'rgba(255, 255, 255, 0.9)',
-  backdropFilter: 'blur(10px)'
+  backdropFilter: 'blur(10px)',
+  borderRadius: '12px'
 };
 
 export const formContainerStyles: SxProps<Theme> = {
-  padding: '20px',
+  padding: {xs: '20px', sm: '40px'},
   display: 'flex',
   flexDirection: 'column',
   gap: '10px',
+  borderRadius: '12px'
 }; 

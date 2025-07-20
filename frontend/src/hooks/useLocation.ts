@@ -85,7 +85,10 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        setCoordinates({ lat: latitude, lon: longitude });
+        setCoordinates(null);
+        setTimeout(() => {
+          setCoordinates({ lat: latitude, lon: longitude });
+        }, 0);
       },
       (error) => {
         console.error('Error getting geolocation:', error);

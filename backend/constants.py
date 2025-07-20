@@ -1,4 +1,3 @@
-# API Configuration
 API_CONFIG = {
     'USER_AGENT': 'weather_data_extractor',
     'FILE_EXPIRY_MINUTES': 5,
@@ -7,13 +6,11 @@ API_CONFIG = {
     'HOURLY_DATA_WINDOW_HOURS': 1
 }
 
-# Date Format Configuration
 DATE_FORMATS = {
     'INPUT_FORMAT': '%d-%m-%Y',
     'DISPLAY_FORMAT': '%Y-%m-%d'
 }
 
-# Weather Thresholds for Analysis
 WEATHER_THRESHOLDS = {
     'TEMPERATURE': {
         'MAX_HIGH': 44,           # °C
@@ -37,7 +34,6 @@ WEATHER_THRESHOLDS = {
     }
 }
 
-# File Configuration
 FILE_CONFIG = {
     'EXCEL_EXTENSION': '.xlsx',
     'PDF_EXTENSION': '.pdf',
@@ -48,7 +44,6 @@ FILE_CONFIG = {
     'DATE_FORMAT_SUFFIX': '%Y%m%d'
 }
 
-# Error Messages
 ERROR_MESSAGES = {
     'VALIDATION': {
         'MISSING_PARAMETERS': 'Missing required parameters',
@@ -65,27 +60,23 @@ ERROR_MESSAGES = {
     }
 }
 
-# Month Names
 MONTH_NAMES = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
-# Month Mapping (1-based index to name)
 MONTH_MAPPING = {
     1: 'January', 2: 'February', 3: 'March', 4: 'April',
     5: 'May', 6: 'June', 7: 'July', 8: 'August',
     9: 'September', 10: 'October', 11: 'November', 12: 'December'
 }
 
-# Application Metadata
 APP_METADATA = {
     'NAME': 'Weather History API',
     'VERSION': '1.0.0',
     'DEBUG': True
 }
 
-# Default Values
 DEFAULTS = {
     'WIND_SPEED': 0,
     'TEMPERATURE': 0,

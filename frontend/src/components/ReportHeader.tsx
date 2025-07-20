@@ -10,8 +10,8 @@ export const ReportHeader = () => {
       alignItems: 'center',
       justifyContent: 'center',
     }}>
-      <Typography variant="h4">Generate Historical Weather Reports</Typography>
-      <Typography variant="subtitle1">Get comprehensive 10-year weather data for any location worldwide</Typography>
+      <Typography variant="h4" textAlign="center">Generate Historical Weather Reports</Typography>
+      <Typography variant="subtitle1" textAlign="center">Get comprehensive 10-year weather data for any location worldwide</Typography>
     </Box>
   );
 }; 

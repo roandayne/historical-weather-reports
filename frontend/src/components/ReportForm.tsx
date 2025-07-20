@@ -78,6 +78,9 @@ export const ReportForm: FC<ReportFormProps> = ({
           color="primary" 
           onClick={handleGenerateReport}
           disabled={isGenerating || !location || !startDate || !endDate}
+          sx={{
+            borderRadius: '12px'
+          }}
         >
           {isGenerating ? 'Generating...' : 'Generate Report'}
         </Button>

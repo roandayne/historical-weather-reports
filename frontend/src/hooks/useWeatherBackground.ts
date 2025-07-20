@@ -1,4 +1,3 @@
-import type { WeatherInfo } from '../types/weather';
 import { useCurrentWeather } from './useCurrentWeather';
 
 interface Coordinates {
