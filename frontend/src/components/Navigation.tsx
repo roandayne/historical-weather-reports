@@ -8,18 +8,30 @@ import ModeNightIcon from '@mui/icons-material/ModeNight';
 
 const Navigation = () => {
   return (
-    <Box sx={{ flexGrow: 1, width: '100%', padding: "10px 80px" }}>
-      <AppBar position="static" sx={{ backgroundColor: 'white', boxShadow: 'none' }}>
-        <Toolbar>
-          <WbCloudyIcon sx={{ color: '#0095ff', marginRight: '10px', fontSize: '2rem' }}/>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: '#42526e', fontWeight: 'bold' }}>
-            Historical Weather Reporter
-          </Typography>
-          <IconButton color="inherit" sx={{ color: '#42526e' }}>
-            <ModeNightIcon />
-          </IconButton>
+    <Box sx={{ width: '100%' }}>
+      <AppBar position="fixed" sx={{ backgroundColor: 'white', boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.1)' }}>
+        <Toolbar sx={{ 
+          padding: '0 24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          minHeight: '64px',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          width: '100%'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <WbCloudyIcon sx={{ color: '#0095ff', marginRight: '24px', fontSize: '2rem' }}/>
+            <Typography variant="h6" component="div" sx={{
+              color: '#42526e', 
+              fontWeight: 'bold',
+              fontSize: '1.1rem'
+            }}>
+              Weather History
+            </Typography>
+          </Box>
         </Toolbar>
       </AppBar>
+      <Toolbar />
     </Box>
   );
 };

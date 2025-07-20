@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from datetime import datetime, timedelta
-from meteostat import Stations, Daily
+from meteostat import Stations, Daily, Hourly
 from geopy.geocoders import Nominatim
 import pandas as pd
 import os
@@ -279,6 +279,39 @@ def geocode():
             return jsonify(results)
         else:
             return jsonify([])
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/current-weather', methods=['GET'])
+def current_weather():
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    
+    if not all([lat, lon]):
+        return jsonify({"error": "Missing latitude or longitude"}), 400
+        
+    try:
+        station = get_nearest_station(float(lat), float(lon))
+        end_time = datetime.now()
+        start_time = end_time - timedelta(hours=1)
+        
+        data = Hourly(station, start=start_time, end=end_time)
+        data = data.fetch()
+        
+        if data.empty:
+            return jsonify({"error": "No weather data available"}), 404
+            
+        latest_data = data.iloc[-1]
+        weather_info = {
+            "temp": round(float(latest_data.get('temp', 0)), 1),
+            "humidity": round(float(latest_data.get('rhum', 0)), 1),
+            "precipitation": round(float(latest_data.get('prcp', 0)), 1),
+            "wind_speed": round(float(latest_data.get('wspd', 0)), 1),
+            "time": latest_data.name.isoformat()
+        }
+        
+        return jsonify(weather_info)
             
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -7,11 +7,17 @@ interface PlaceType {
   lon: string;
 }
 
+interface Coordinates {
+  lat: number;
+  lon: number;
+}
+
 export const useLocation = () => {
   const [location, setLocation] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [options, setOptions] = useState<PlaceType[]>([]);
   const [loading, setLoading] = useState(false);
+  const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -62,6 +68,7 @@ export const useLocation = () => {
             params: { lat: latitude, lon: longitude }
           });
           setLocation(response.data.location || 'Could not find location');
+          setCoordinates({ lat: latitude, lon: longitude });
         } catch (error) {
           console.error('Error fetching location name:', error);
           setLocation(error instanceof AxiosError ? `Error: ${error.message}` : 'Error fetching location name');
@@ -78,6 +85,16 @@ export const useLocation = () => {
     );
   };
 
+  useEffect(() => {
+    const selectedOption = options.find(opt => opt.display_name === location);
+    if (selectedOption) {
+      setCoordinates({
+        lat: parseFloat(selectedOption.lat),
+        lon: parseFloat(selectedOption.lon)
+      });
+    }
+  }, [location, options]);
+
   return {
     location,
     setLocation,
@@ -85,6 +102,7 @@ export const useLocation = () => {
     setInputValue,
     options,
     loading,
-    handleUseMyLocation
+    handleUseMyLocation,
+    coordinates
   };
 }; 

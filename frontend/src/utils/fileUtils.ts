@@ -10,7 +10,7 @@ export const downloadFile = async (filename: string): Promise<void> => {
   link.setAttribute('download', filename);
   document.body.appendChild(link);
   link.click();
-  link.remove();
+  document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
 };
 
