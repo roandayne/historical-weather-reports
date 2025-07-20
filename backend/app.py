@@ -13,6 +13,10 @@ from utils import normalize_request_data
 import io
 import uuid
 from threading import Timer
+from constants import (
+    API_CONFIG, DATE_FORMATS, WEATHER_THRESHOLDS, FILE_CONFIG, 
+    ERROR_MESSAGES, MONTH_MAPPING, APP_METADATA, DEFAULTS
+)
 
 app = Flask(__name__)
 CORS(app)
@@ -25,9 +29,9 @@ class FileStorage:
     def store(self, data, file_type):
         file_id = str(uuid.uuid4())
         self.files[file_id] = data
-        self.expiry[file_id] = datetime.now() + timedelta(minutes=5)
+        self.expiry[file_id] = datetime.now() + timedelta(minutes=API_CONFIG['FILE_EXPIRY_MINUTES'])
         
-        Timer(300, self.remove, args=[file_id]).start()
+        Timer(API_CONFIG['FILE_EXPIRY_SECONDS'], self.remove, args=[file_id]).start()
         return file_id
         
     def get(self, file_id):
@@ -44,12 +48,12 @@ class FileStorage:
 file_storage = FileStorage()
 
 def get_coordinates(location_name):
-    geolocator = Nominatim(user_agent="weather_data_extractor")
+    geolocator = Nominatim(user_agent=API_CONFIG['USER_AGENT'])
     location = geolocator.geocode(location_name)
     if location:
         return location.latitude, location.longitude
     else:
-        raise ValueError(f"Location '{location_name}' not found. Please check the spelling or try a more specific name.")
+        raise ValueError(ERROR_MESSAGES['VALIDATION']['LOCATION_NOT_FOUND'].format(location_name))
 
 def get_nearest_station(lat, lon):
     stations = Stations()
@@ -58,76 +62,75 @@ def get_nearest_station(lat, lon):
     if not station.empty:
         return station.index[0]
     else:
-        raise ValueError("No weather stations found nearby. Try a different location.")
+        raise ValueError(ERROR_MESSAGES['VALIDATION']['NO_WEATHER_STATIONS'])
 
 def fetch_weather_data(station_id, start_date, end_date):
     data = Daily(station_id, start=start_date, end=end_date)
     data = data.fetch()
     if data.empty:
-        raise ValueError("No weather data available for the specified date range.")
+        raise ValueError(ERROR_MESSAGES['VALIDATION']['NO_WEATHER_DATA'])
     return data
 
 def validate_date(date_text):
     try:
-        return datetime.strptime(date_text, "%d-%m-%Y")
+        return datetime.strptime(date_text, DATE_FORMATS['INPUT_FORMAT'])
     except ValueError:
-        raise ValueError("Incorrect date format. Please use DD-MM-YYYY.")
+        raise ValueError(ERROR_MESSAGES['VALIDATION']['INVALID_DATE_FORMAT'])
 
 def calculate_monthly_lost_days(weather_data):
     monthly_lost_days = pd.DataFrame(index=range(1, 13))
+    
+    temp_thresholds = WEATHER_THRESHOLDS['TEMPERATURE']
+    precip_thresholds = WEATHER_THRESHOLDS['PRECIPITATION']
+    wind_thresholds = WEATHER_THRESHOLDS['WIND']
 
-    monthly_lost_days['Max > 44°C'] = weather_data[weather_data['tmax'] > 44].groupby('month').size()
-    monthly_lost_days['Max > 35°C'] = weather_data[weather_data['tmax'] > 35].groupby('month').size()
-    monthly_lost_days['Min < 20°C'] = weather_data[weather_data['tmin'] < 20].groupby('month').size()
-    monthly_lost_days['Min < 15°C'] = weather_data[weather_data['tmin'] < 15].groupby('month').size()
-    monthly_lost_days['Min < 10°C'] = weather_data[weather_data['tmin'] < 10].groupby('month').size()
-    monthly_lost_days['Min < 5°C'] = weather_data[weather_data['tmin'] < 5].groupby('month').size()
+    monthly_lost_days[f'Max > {temp_thresholds["MAX_HIGH"]}°C'] = weather_data[weather_data['tmax'] > temp_thresholds['MAX_HIGH']].groupby('month').size()
+    monthly_lost_days[f'Max > {temp_thresholds["MAX_MODERATE"]}°C'] = weather_data[weather_data['tmax'] > temp_thresholds['MAX_MODERATE']].groupby('month').size()
+    monthly_lost_days[f'Min < {temp_thresholds["MIN_COLD"]}°C'] = weather_data[weather_data['tmin'] < temp_thresholds['MIN_COLD']].groupby('month').size()
+    monthly_lost_days[f'Min < {temp_thresholds["MIN_VERY_COLD"]}°C'] = weather_data[weather_data['tmin'] < temp_thresholds['MIN_VERY_COLD']].groupby('month').size()
+    monthly_lost_days[f'Min < {temp_thresholds["MIN_FREEZING"]}°C'] = weather_data[weather_data['tmin'] < temp_thresholds['MIN_FREEZING']].groupby('month').size()
+    monthly_lost_days[f'Min < {temp_thresholds["MIN_EXTREME_COLD"]}°C'] = weather_data[weather_data['tmin'] < temp_thresholds['MIN_EXTREME_COLD']].groupby('month').size()
 
-    monthly_lost_days['Rain > 25mm'] = weather_data[weather_data['prcp'] > 25].groupby('month').size()
-    monthly_lost_days['Rain > 50mm'] = weather_data[weather_data['prcp'] > 50].groupby('month').size()
+    monthly_lost_days[f'Rain > {precip_thresholds["HEAVY_RAIN"]}mm'] = weather_data[weather_data['prcp'] > precip_thresholds['HEAVY_RAIN']].groupby('month').size()
+    monthly_lost_days[f'Rain > {precip_thresholds["VERY_HEAVY_RAIN"]}mm'] = weather_data[weather_data['prcp'] > precip_thresholds['VERY_HEAVY_RAIN']].groupby('month').size()
 
     if 'wspd' in weather_data.columns:
-        monthly_lost_days['Wind > 10 m/s'] = weather_data[weather_data['wspd'] > 10].groupby('month').size()
-        monthly_lost_days['Wind > 15 m/s'] = weather_data[weather_data['wspd'] > 15].groupby('month').size()
-        monthly_lost_days['Wind > 20 m/s'] = weather_data[weather_data['wspd'] > 20].groupby('month').size()
+        monthly_lost_days[f'Wind > {wind_thresholds["MODERATE"]} m/s'] = weather_data[weather_data['wspd'] > wind_thresholds['MODERATE']].groupby('month').size()
+        monthly_lost_days[f'Wind > {wind_thresholds["HIGH"]} m/s'] = weather_data[weather_data['wspd'] > wind_thresholds['HIGH']].groupby('month').size()
+        monthly_lost_days[f'Wind > {wind_thresholds["VERY_HIGH"]} m/s'] = weather_data[weather_data['wspd'] > wind_thresholds['VERY_HIGH']].groupby('month').size()
     else:
-        monthly_lost_days['Wind > 10 m/s'] = 0
-        monthly_lost_days['Wind > 15 m/s'] = 0
-        monthly_lost_days['Wind > 20 m/s'] = 0
+        monthly_lost_days[f'Wind > {wind_thresholds["MODERATE"]} m/s'] = 0
+        monthly_lost_days[f'Wind > {wind_thresholds["HIGH"]} m/s'] = 0
+        monthly_lost_days[f'Wind > {wind_thresholds["VERY_HIGH"]} m/s'] = 0
 
     total_years = weather_data['year'].nunique()
     monthly_lost_days = monthly_lost_days.fillna(0) / total_years
 
-    monthly_lost_days.index = monthly_lost_days.index.map({
-        1: 'January', 2: 'February', 3: 'March', 4: 'April',
-        5: 'May', 6: 'June', 7: 'July', 8: 'August',
-        9: 'September', 10: 'October', 11: 'November', 12: 'December'
-    })
+    monthly_lost_days.index = monthly_lost_days.index.map(MONTH_MAPPING)
 
     return monthly_lost_days
 
 def analyze_weather_data(weather_data, location_name, script_dir, lat, lon):
     weather_data['month'] = weather_data.index.month
     weather_data['year'] = weather_data.index.year
+    
+    precip_thresholds = WEATHER_THRESHOLDS['PRECIPITATION']
+    wind_thresholds = WEATHER_THRESHOLDS['WIND']
 
-    rain_over_5mm = weather_data[weather_data['prcp'] > 5].groupby('month').size() / weather_data['year'].nunique()
-    rain_over_10mm = weather_data[weather_data['prcp'] > 10].groupby('month').size() / weather_data['year'].nunique()
+    rain_over_5mm = weather_data[weather_data['prcp'] > precip_thresholds['LIGHT_RAIN']].groupby('month').size() / weather_data['year'].nunique()
+    rain_over_10mm = weather_data[weather_data['prcp'] > precip_thresholds['MODERATE_RAIN']].groupby('month').size() / weather_data['year'].nunique()
     if 'wspd' in weather_data.columns:
-        wind_over_40km = weather_data[weather_data['wspd'] > 40].groupby('month').size() / weather_data['year'].nunique()
+        wind_over_40km = weather_data[weather_data['wspd'] > wind_thresholds['EXTREME_KMH']].groupby('month').size() / weather_data['year'].nunique()
     else:
         wind_over_40km = pd.Series(0, index=rain_over_5mm.index)
 
     summary = pd.DataFrame({
-        'Rain > 5mm Days (Avg)': rain_over_5mm,
-        'Rain > 10mm Days (Avg)': rain_over_10mm,
-        'Wind > 40km/h Days (Avg)': wind_over_40km
+        f'Rain > {precip_thresholds["LIGHT_RAIN"]}mm Days (Avg)': rain_over_5mm,
+        f'Rain > {precip_thresholds["MODERATE_RAIN"]}mm Days (Avg)': rain_over_10mm,
+        f'Wind > {wind_thresholds["EXTREME_KMH"]}km/h Days (Avg)': wind_over_40km
     }).fillna(0)
 
-    summary.index = summary.index.map({
-        1: 'January', 2: 'February', 3: 'March', 4: 'April',
-        5: 'May', 6: 'June', 7: 'July', 8: 'August',
-        9: 'September', 10: 'October', 11: 'November', 12: 'December'
-    })
+    summary.index = summary.index.map(MONTH_MAPPING)
 
     monthly_lost_days = calculate_monthly_lost_days(weather_data)
 
@@ -198,7 +201,7 @@ def weather_data_endpoint():
     end_date_input = data.get('end_date')
 
     if not all([location_name, start_date_input, end_date_input]):
-        return jsonify({"error": "Missing required parameters"}), 400
+        return jsonify({"error": ERROR_MESSAGES['VALIDATION']['MISSING_PARAMETERS']}), 400
 
     try:
         start_date = validate_date(start_date_input)
@@ -231,10 +234,10 @@ def reverse_geocode():
     lon = request.args.get('lon')
     
     if not all([lat, lon]):
-        return jsonify({"error": "Missing latitude or longitude"}), 400
+        return jsonify({"error": ERROR_MESSAGES['VALIDATION']['MISSING_COORDINATES']}), 400
         
     try:
-        geolocator = Nominatim(user_agent="weather_data_extractor")
+        geolocator = Nominatim(user_agent=API_CONFIG['USER_AGENT'])
         location = geolocator.reverse((float(lat), float(lon)), language='en')
         
         if location and location.raw.get('address'):
@@ -262,11 +265,11 @@ def geocode():
     query = request.args.get('q')
     
     if not query:
-        return jsonify({"error": "Missing search query"}), 400
+        return jsonify({"error": ERROR_MESSAGES['VALIDATION']['MISSING_SEARCH_QUERY']}), 400
         
     try:
-        geolocator = Nominatim(user_agent="weather_data_extractor")
-        locations = geolocator.geocode(query, exactly_one=False, limit=5)
+        geolocator = Nominatim(user_agent=API_CONFIG['USER_AGENT'])
+        locations = geolocator.geocode(query, exactly_one=False, limit=API_CONFIG['GEOCODE_RESULT_LIMIT'])
         
         if locations:
             results = []
@@ -289,12 +292,12 @@ def current_weather():
     lon = request.args.get('lon')
     
     if not all([lat, lon]):
-        return jsonify({"error": "Missing latitude or longitude"}), 400
+        return jsonify({"error": ERROR_MESSAGES['VALIDATION']['MISSING_COORDINATES']}), 400
         
     try:
         station = get_nearest_station(float(lat), float(lon))
         end_time = datetime.now()
-        start_time = end_time - timedelta(hours=1)
+        start_time = end_time - timedelta(hours=API_CONFIG['HOURLY_DATA_WINDOW_HOURS'])
         
         data = Hourly(station, start=start_time, end=end_time)
         data = data.fetch()
@@ -304,10 +307,10 @@ def current_weather():
             
         latest_data = data.iloc[-1]
         weather_info = {
-            "temp": round(float(latest_data.get('temp', 0)), 1),
-            "humidity": round(float(latest_data.get('rhum', 0)), 1),
-            "precipitation": round(float(latest_data.get('prcp', 0)), 1),
-            "wind_speed": round(float(latest_data.get('wspd', 0)), 1),
+            "temp": round(float(latest_data.get('temp', DEFAULTS['TEMPERATURE'])), 1),
+            "humidity": round(float(latest_data.get('rhum', DEFAULTS['HUMIDITY'])), 1),
+            "precipitation": round(float(latest_data.get('prcp', DEFAULTS['PRECIPITATION'])), 1),
+            "wind_speed": round(float(latest_data.get('wspd', DEFAULTS['WIND_SPEED'])), 1),
             "time": latest_data.name.isoformat()
         }
         
@@ -321,27 +324,27 @@ def download_file(filename):
     try:
         file_id = filename.rsplit('.', 1)[0]
         
-        if filename.endswith('.xlsx'):
+        if filename.endswith(FILE_CONFIG['EXCEL_EXTENSION']):
             buffer_data = file_storage.get(file_id)
-            mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        elif filename.endswith('.pdf'):
+            mimetype = FILE_CONFIG['MIME_TYPES']['EXCEL']
+        elif filename.endswith(FILE_CONFIG['PDF_EXTENSION']):
             buffer_data = file_storage.get(file_id)
-            mimetype = 'application/pdf'
+            mimetype = FILE_CONFIG['MIME_TYPES']['PDF']
         else:
-            return jsonify({"error": "Invalid file type"}), 400
+            return jsonify({"error": ERROR_MESSAGES['FILES']['INVALID_FILE_TYPE']}), 400
 
         if buffer_data is None:
-            return jsonify({"error": "File not found or expired"}), 404
+            return jsonify({"error": ERROR_MESSAGES['FILES']['NOT_FOUND_OR_EXPIRED']}), 404
 
         return send_file(
             io.BytesIO(buffer_data),
             mimetype=mimetype,
             as_attachment=True,
-            download_name=f"{filename.split('.')[0]}_{datetime.now().strftime('%Y%m%d')}.{filename.split('.')[1]}"
+            download_name=f"{filename.split('.')[0]}_{datetime.now().strftime(FILE_CONFIG['DATE_FORMAT_SUFFIX'])}.{filename.split('.')[1]}"
         )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=APP_METADATA['DEBUG'])

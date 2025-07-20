@@ -3,6 +3,7 @@ import axios from 'axios';
 import type { AlertState } from './useAlert';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from './useDebounce';
+import { API_CONFIG, API_ENDPOINTS, UI_CONFIG, ERROR_MESSAGES } from '../constants';
 
 interface PlaceType {
   display_name: string;
@@ -16,10 +17,8 @@ interface Coordinates {
 }
 
 const api = axios.create({
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  timeout: API_CONFIG.DEFAULT_TIMEOUT,
+  headers: API_CONFIG.DEFAULT_HEADERS
 });
 
 export const useLocation = (showAlert: (type: AlertState['type'], message: string) => void) => {
@@ -27,14 +26,14 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
   const [inputValue, setInputValue] = useState('');
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   
-  const debouncedInput = useDebounce(inputValue, 300);
+  const debouncedInput = useDebounce(inputValue, UI_CONFIG.SEARCH_DEBOUNCE_DELAY);
 
   const { data: reverseGeocodeData } = useQuery({
     queryKey: ['reverseGeocode', coordinates?.lat, coordinates?.lon],
     queryFn: async () => {
       if (!coordinates) return null;
       try {
-        const response = await api.get('/api/reverse-geocode', {
+        const response = await api.get(API_ENDPOINTS.REVERSE_GEOCODE, {
           params: { lat: coordinates.lat, lon: coordinates.lon }
         });
         return response.data;
@@ -47,7 +46,7 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
     },
     enabled: !!coordinates?.lat && !!coordinates?.lon,
     staleTime: Infinity,
-    retry: 1
+    retry: UI_CONFIG.DEFAULT_RETRY_COUNT
   });
 
   useEffect(() => {
@@ -59,9 +58,9 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
   const { data: geocodeData, isLoading } = useQuery({
     queryKey: ['geocode', debouncedInput],
     queryFn: async () => {
-      if (debouncedInput.length < 3) return [];
+      if (debouncedInput.length < UI_CONFIG.MIN_SEARCH_LENGTH) return [];
       try {
-        const response = await api.get<PlaceType[]>('/api/geocode', {
+        const response = await api.get<PlaceType[]>(API_ENDPOINTS.GEOCODE, {
           params: { q: debouncedInput }
         });
         return response.data;
@@ -72,10 +71,10 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
         throw error;
       }
     },
-    enabled: debouncedInput.length >= 3,
-    staleTime: 60 * 1000,
-    gcTime: 2 * 60 * 1000,
-    retry: 1,
+    enabled: debouncedInput.length >= UI_CONFIG.MIN_SEARCH_LENGTH,
+    staleTime: UI_CONFIG.SEARCH_STALE_TIME,
+    gcTime: UI_CONFIG.SEARCH_GC_TIME,
+    retry: UI_CONFIG.DEFAULT_RETRY_COUNT,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     placeholderData: []
@@ -83,7 +82,7 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
 
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
-      showAlert('error', 'Geolocation is not supported by this browser.');
+      showAlert('error', ERROR_MESSAGES.GEOLOCATION.NOT_SUPPORTED);
       setLocation('Geolocation not supported');
       return;
     }

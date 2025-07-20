@@ -4,6 +4,7 @@ import type { WeatherData, WeatherResponse, ErrorResponse } from '../types/weath
 import { weatherApi } from '../services/weatherApi';
 import { downloadFile } from '../utils/fileUtils';
 import type { AlertState } from './useAlert';
+import { SUCCESS_MESSAGES } from '../constants';
 
 export const useReportGeneration = (showAlert: (type: AlertState['type'], message: string) => void) => {
   const mutation = useMutation<WeatherResponse, AxiosError<ErrorResponse>, WeatherData>({
@@ -12,7 +13,7 @@ export const useReportGeneration = (showAlert: (type: AlertState['type'], messag
       downloadFile(response.excel_report)
         .then(() => downloadFile(response.pdf_report))
         .then(() => {
-          showAlert('success', 'Reports generated and downloaded successfully!');
+          showAlert('success', SUCCESS_MESSAGES.REPORT_GENERATED);
         })
         .catch((error) => {
           showAlert('error', error instanceof Error ? error.message : 'Error downloading files. Please try again.');

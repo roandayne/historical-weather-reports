@@ -1,5 +1,6 @@
 import { Autocomplete, TextField, InputAdornment, IconButton, Box, Typography } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { UI_CONFIG } from '../constants';
 
 interface PlaceType {
   display_name: string;
@@ -50,7 +51,7 @@ export const LocationAutocomplete = ({
       filterSelectedOptions
       loading={loading}
       value={location}
-      noOptionsText={inputValue.length < 3 ? "Type at least 3 characters" : "No locations found"}
+      noOptionsText={inputValue.length < UI_CONFIG.MIN_SEARCH_LENGTH ? `Type at least ${UI_CONFIG.MIN_SEARCH_LENGTH} characters` : "No locations found"}
       onChange={(_event: any, newValue: PlaceType | string | null) => onLocationChange(newValue)}
       onInputChange={(_event, newValue) => onInputChange(newValue)}
       freeSolo

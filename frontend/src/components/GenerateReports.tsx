@@ -10,6 +10,7 @@ import { ReportForm } from './ReportForm';
 import { CurrentWeather } from './CurrentWeather';
 import { containerStyles, getBackgroundStyle } from '../styles/GenerateReports.styles';
 import type { PlaceType } from '../types/weather';
+import { UI_CONFIG } from '../constants';
 
 const GenerateReports = () => {
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
@@ -38,7 +39,7 @@ const GenerateReports = () => {
       {alert && (
         <Snackbar
           open={true}
-          autoHideDuration={6000}
+          autoHideDuration={UI_CONFIG.ALERT_AUTO_HIDE_DURATION}
           onClose={clearAlert}
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           sx={{ 

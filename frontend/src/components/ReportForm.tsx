@@ -6,6 +6,7 @@ import { DateRangePicker } from './DateRangePicker';
 import { formPaperStyles, formContainerStyles } from '../styles/GenerateReports.styles';
 import { formatDateForBackend } from '../utils/fileUtils';
 import type { FC } from 'react';
+import { ERROR_MESSAGES } from '../constants';
 
 interface ReportFormProps {
   location: string;
@@ -48,7 +49,7 @@ export const ReportForm: FC<ReportFormProps> = ({
         endDate: formatDateForBackend(endDate)
       });
     } else {
-      onShowAlert('error', 'Please select a location and date range');
+      onShowAlert('error', ERROR_MESSAGES.VALIDATION.MISSING_LOCATION);
     }
   };
 

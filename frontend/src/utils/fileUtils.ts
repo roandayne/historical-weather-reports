@@ -1,15 +1,14 @@
 import axios from 'axios';
+import { API_CONFIG, API_ENDPOINTS, ERROR_MESSAGES } from '../constants';
 
 const api = axios.create({
-  timeout: 60000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  timeout: API_CONFIG.FILE_DOWNLOAD_TIMEOUT,
+  headers: API_CONFIG.DEFAULT_HEADERS
 });
 
 export const downloadFile = async (filename: string): Promise<void> => {
   try {
-    const response = await api.get(`/api/download/${filename}`, {
+    const response = await api.get(`${API_ENDPOINTS.DOWNLOAD}/${filename}`, {
       responseType: 'blob'
     });
     
@@ -24,20 +23,20 @@ export const downloadFile = async (filename: string): Promise<void> => {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.code === 'ECONNABORTED') {
-        throw new Error('File download timed out. Please try again.');
+        throw new Error(ERROR_MESSAGES.NETWORK.TIMEOUT);
       }
       if (error.response) {
         const message = error.response.data?.message || `Server error (${error.response.status}): Failed to download file`;
         throw new Error(message);
       }
       if (error.request) {
-        throw new Error('No response from server while downloading file. Please try again.');
+        throw new Error(ERROR_MESSAGES.NETWORK.NO_RESPONSE);
       }
     }
     if (error instanceof Error) {
-      throw new Error(`Failed to download file: ${error.message}`);
+      throw new Error(`${ERROR_MESSAGES.FILE.DOWNLOAD_FAILED}: ${error.message}`);
     }
-    throw new Error('Failed to download file');
+    throw new Error(ERROR_MESSAGES.FILE.DOWNLOAD_FAILED);
   }
 };
 
