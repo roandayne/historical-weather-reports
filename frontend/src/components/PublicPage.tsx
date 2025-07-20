@@ -1,5 +1,4 @@
 import React, { type FC } from 'react'
-import Navigation from './Navigation'
 
 interface PublicPageProps {
   children: React.ReactNode
@@ -8,7 +7,6 @@ interface PublicPageProps {
 const PublicPage: FC<PublicPageProps> = ({ children }) => {
   return (
     <div>
-      <Navigation />
       {children}
     </div>
   )

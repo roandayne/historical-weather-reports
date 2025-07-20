@@ -15,7 +15,7 @@ export const getBackgroundStyle = (coordinates: Coordinates | null, weather: Wea
   };
   
   return {
-    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url("${getWeatherBackground(weather.temp)}")`,
+    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url("${getWeatherBackground(weather)}")`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundAttachment: 'fixed',

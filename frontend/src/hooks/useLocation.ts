@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
+import type { AlertState } from './useAlert';
+import { useQuery } from '@tanstack/react-query';
+import { useDebounce } from './useDebounce';
 
 interface PlaceType {
   display_name: string;
@@ -12,97 +15,99 @@ interface Coordinates {
   lon: number;
 }
 
-export const useLocation = () => {
+const api = axios.create({
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+export const useLocation = (showAlert: (type: AlertState['type'], message: string) => void) => {
   const [location, setLocation] = useState('');
   const [inputValue, setInputValue] = useState('');
-  const [options, setOptions] = useState<PlaceType[]>([]);
-  const [loading, setLoading] = useState(false);
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
+  
+  const debouncedInput = useDebounce(inputValue, 300);
+
+  const { data: reverseGeocodeData } = useQuery({
+    queryKey: ['reverseGeocode', coordinates?.lat, coordinates?.lon],
+    queryFn: async () => {
+      if (!coordinates) return null;
+      try {
+        const response = await api.get('/api/reverse-geocode', {
+          params: { lat: coordinates.lat, lon: coordinates.lon }
+        });
+        return response.data;
+      } catch (error) {
+        if (error instanceof Error) {
+          showAlert('error', `Failed to get location: ${error.message}`);
+        }
+        throw error;
+      }
+    },
+    enabled: !!coordinates?.lat && !!coordinates?.lon,
+    staleTime: Infinity,
+    retry: 1
+  });
 
   useEffect(() => {
-    let active = true;
+    if (reverseGeocodeData?.location) {
+      setLocation(reverseGeocodeData.location);
+    }
+  }, [reverseGeocodeData]);
 
-    const fetchPlaces = async () => {
+  const { data: geocodeData, isLoading } = useQuery({
+    queryKey: ['geocode', debouncedInput],
+    queryFn: async () => {
+      if (debouncedInput.length < 3) return [];
       try {
-        if (inputValue.length < 3) {
-          setOptions([]);
-          return;
-        }
-
-        setLoading(true);
-        const response = await axios.get('/api/geocode', {
-          params: { q: inputValue }
+        const response = await api.get<PlaceType[]>('/api/geocode', {
+          params: { q: debouncedInput }
         });
-
-        if (active) {
-          setOptions(response.data);
-        }
+        return response.data;
       } catch (error) {
-        console.error('Failed to fetch places:', error);
-        setOptions([]);
-      } finally {
-        setLoading(false);
+        if (error instanceof Error) {
+          showAlert('error', `Search error: ${error.message}`);
+        }
+        throw error;
       }
-    };
-
-    const timeoutId = setTimeout(fetchPlaces, 300);
-
-    return () => {
-      active = false;
-      clearTimeout(timeoutId);
-    };
-  }, [inputValue]);
+    },
+    enabled: debouncedInput.length >= 3,
+    staleTime: 60 * 1000,
+    gcTime: 2 * 60 * 1000,
+    retry: 1,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    placeholderData: []
+  });
 
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
-      console.error('Geolocation is not supported by this browser.');
+      showAlert('error', 'Geolocation is not supported by this browser.');
       setLocation('Geolocation not supported');
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      (position) => {
         const { latitude, longitude } = position.coords;
-        try {
-          const response = await axios.get('/api/reverse-geocode', {
-            params: { lat: latitude, lon: longitude }
-          });
-          setLocation(response.data.location || 'Could not find location');
-          setCoordinates({ lat: latitude, lon: longitude });
-        } catch (error) {
-          console.error('Error fetching location name:', error);
-          setLocation(error instanceof AxiosError ? `Error: ${error.message}` : 'Error fetching location name');
-        }
+        setCoordinates({ lat: latitude, lon: longitude });
       },
       (error) => {
         console.error('Error getting geolocation:', error);
-        setLocation(`Error: ${error.message}`);
-      },
-      {
-        timeout: 10000,
-        enableHighAccuracy: true,
+        showAlert('error', `Error: ${error.message}`);
       }
     );
   };
-
-  useEffect(() => {
-    const selectedOption = options.find(opt => opt.display_name === location);
-    if (selectedOption) {
-      setCoordinates({
-        lat: parseFloat(selectedOption.lat),
-        lon: parseFloat(selectedOption.lon)
-      });
-    }
-  }, [location, options]);
 
   return {
     location,
     setLocation,
     inputValue,
     setInputValue,
-    options,
-    loading,
-    handleUseMyLocation,
-    coordinates
+    options: geocodeData || [],
+    loading: isLoading,
+    coordinates,
+    handleUseMyLocation
   };
 }; 

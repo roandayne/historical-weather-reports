@@ -3,24 +3,23 @@ import type { AxiosError } from 'axios';
 import type { WeatherData, WeatherResponse, ErrorResponse } from '../types/weather';
 import { weatherApi } from '../services/weatherApi';
 import { downloadFile } from '../utils/fileUtils';
-import { useAlert } from './useAlert';
+import type { AlertState } from './useAlert';
 
-export const useReportGeneration = () => {
-  const { showAlert } = useAlert();
-
+export const useReportGeneration = (showAlert: (type: AlertState['type'], message: string) => void) => {
   const mutation = useMutation<WeatherResponse, AxiosError<ErrorResponse>, WeatherData>({
-    mutationFn: weatherApi.generateReport,
-    onSuccess: async (response) => {
-      try {
-        await downloadFile(response.excel_report);
-        await downloadFile(response.pdf_report);
-        showAlert('success', 'Reports generated and downloaded successfully!');
-      } catch (error) {
-        showAlert('error', 'Error downloading files. Please try again.');
-      }
+    mutationFn: (data: WeatherData) => weatherApi.generateReport(data),
+    onSuccess: (response) => {
+      downloadFile(response.excel_report)
+        .then(() => downloadFile(response.pdf_report))
+        .then(() => {
+          showAlert('success', 'Reports generated and downloaded successfully!');
+        })
+        .catch((error) => {
+          showAlert('error', error instanceof Error ? error.message : 'Error downloading files. Please try again.');
+        });
     },
     onError: (error: AxiosError<ErrorResponse>) => {
-      showAlert('error', error.response?.data?.message || 'Error generating report. Please try again.');
+      showAlert('error', error.response?.data?.message || error.message || 'Error generating report. Please try again.');
     },
   });
 

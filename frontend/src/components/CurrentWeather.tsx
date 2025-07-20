@@ -1,15 +1,7 @@
 import { Box, Typography, CircularProgress } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { DeviceThermostat, WaterDrop, Opacity, Air } from '@mui/icons-material';
-
-interface WeatherInfo {
-  temp: number;
-  humidity: number;
-  precipitation: number;
-  wind_speed: number;
-  time: string;
-}
+import { useCurrentWeather } from '../hooks/useCurrentWeather';
+import type { FC } from 'react';
 
 interface CurrentWeatherProps {
   lat?: string;
@@ -17,19 +9,13 @@ interface CurrentWeatherProps {
   location: string;
 }
 
-export const CurrentWeather = ({ lat, lon, location }: CurrentWeatherProps) => {
-  const { data: weather, isLoading, error } = useQuery<WeatherInfo>({
-    queryKey: ['currentWeather', lat, lon],
-    queryFn: async () => {
-      if (!lat || !lon) return null;
-      const response = await axios.get('/api/current-weather', {
-        params: { lat, lon }
-      });
-      return response.data;
-    },
-    enabled: !!lat && !!lon,
-    refetchInterval: 300000
-  });
+export const CurrentWeather: FC<CurrentWeatherProps> = ({ lat, lon, location }) => {
+  const coordinates = lat && lon ? {
+    lat: parseFloat(lat),
+    lon: parseFloat(lon)
+  } : null;
+
+  const { weather, isLoading, error } = useCurrentWeather(coordinates);
 
   if (!lat || !lon) return null;
   if (isLoading) return <CircularProgress />;

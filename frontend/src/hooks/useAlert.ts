@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export interface AlertState {
   type: 'success' | 'error';
@@ -8,13 +8,13 @@ export interface AlertState {
 export const useAlert = () => {
   const [alert, setAlert] = useState<AlertState | null>(null);
 
-  const showAlert = (type: AlertState['type'], message: string) => {
+  const showAlert = useCallback((type: AlertState['type'], message: string) => {
     setAlert({ type, message });
-  };
+  }, []);
 
-  const clearAlert = () => {
+  const clearAlert = useCallback(() => {
     setAlert(null);
-  };
+  }, []);
 
   return {
     alert,

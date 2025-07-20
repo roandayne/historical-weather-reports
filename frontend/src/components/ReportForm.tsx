@@ -5,6 +5,7 @@ import { LocationAutocomplete } from './LocationAutocomplete';
 import { DateRangePicker } from './DateRangePicker';
 import { formPaperStyles, formContainerStyles } from '../styles/GenerateReports.styles';
 import { formatDateForBackend } from '../utils/fileUtils';
+import type { FC } from 'react';
 
 interface ReportFormProps {
   location: string;
@@ -20,9 +21,10 @@ interface ReportFormProps {
   onStartDateChange: (date: Dayjs | null) => void;
   onEndDateChange: (date: Dayjs | null) => void;
   onGenerateReport: (data: { location: string; startDate: string; endDate: string; }) => void;
+  onShowAlert: (type: 'error' | 'success', message: string) => void;
 }
 
-export const ReportForm = ({
+export const ReportForm: FC<ReportFormProps> = ({
   location,
   inputValue,
   options,
@@ -36,7 +38,8 @@ export const ReportForm = ({
   onStartDateChange,
   onEndDateChange,
   onGenerateReport,
-}: ReportFormProps) => {
+  onShowAlert,
+}) => {
   const handleGenerateReport = () => {
     if (location && startDate && endDate) {
       onGenerateReport({
@@ -44,6 +47,8 @@ export const ReportForm = ({
         startDate: formatDateForBackend(startDate),
         endDate: formatDateForBackend(endDate)
       });
+    } else {
+      onShowAlert('error', 'Please select a location and date range');
     }
   };
 
