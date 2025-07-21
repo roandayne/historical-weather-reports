@@ -22,11 +22,16 @@ CORS(app)
 class FileStorage:
     def __init__(self):
         self.files = {}
+        self.metadata = {}
         self.expiry = {}
         
-    def store(self, data, file_type):
+    def store(self, data, file_type, location_name=None):
         file_id = str(uuid.uuid4())
         self.files[file_id] = data
+        self.metadata[file_id] = {
+            'file_type': file_type,
+            'location_name': location_name
+        }
         self.expiry[file_id] = datetime.now() + timedelta(minutes=API_CONFIG['FILE_EXPIRY_MINUTES'])
         
         Timer(API_CONFIG['FILE_EXPIRY_SECONDS'], self.remove, args=[file_id]).start()
@@ -35,12 +40,14 @@ class FileStorage:
     def get(self, file_id):
         if file_id in self.files and datetime.now() < self.expiry[file_id]:
             data = self.files[file_id]
+            metadata = self.metadata[file_id]
             self.remove(file_id)
-            return data
-        return None
+            return data, metadata
+        return None, None
         
     def remove(self, file_id):
         self.files.pop(file_id, None)
+        self.metadata.pop(file_id, None)
         self.expiry.pop(file_id, None)
 
 file_storage = FileStorage()
@@ -263,8 +270,8 @@ def weather_data_endpoint():
         
         excel_buffer, pdf_buffer = analyze_weather_data(weather_data, location_name, script_dir, lat, lon)
 
-        excel_id = file_storage.store(excel_buffer.getvalue(), 'excel')
-        pdf_id = file_storage.store(pdf_buffer.getvalue(), 'pdf')
+        excel_id = file_storage.store(excel_buffer.getvalue(), 'excel', location_name)
+        pdf_id = file_storage.store(pdf_buffer.getvalue(), 'pdf', location_name)
 
         return jsonify({
             "message": "Weather analysis complete.",
@@ -371,22 +378,30 @@ def download_file(filename):
         file_id = filename.rsplit('.', 1)[0]
         
         if filename.endswith(FILE_CONFIG['EXCEL_EXTENSION']):
-            buffer_data = file_storage.get(file_id)
+            buffer_data, metadata = file_storage.get(file_id)
             mimetype = FILE_CONFIG['MIME_TYPES']['EXCEL']
+            file_suffix = "_weather_analysis.xlsx"
         elif filename.endswith(FILE_CONFIG['PDF_EXTENSION']):
-            buffer_data = file_storage.get(file_id)
+            buffer_data, metadata = file_storage.get(file_id)
             mimetype = FILE_CONFIG['MIME_TYPES']['PDF']
+            file_suffix = "_weather_report.pdf"
         else:
             return jsonify({"error": ERROR_MESSAGES['FILES']['INVALID_FILE_TYPE']}), 400
 
         if buffer_data is None:
             return jsonify({"error": ERROR_MESSAGES['FILES']['NOT_FOUND_OR_EXPIRED']}), 404
 
+        if metadata and metadata.get('location_name'):
+            location_clean = metadata['location_name'].replace(' ', '_').replace(',', '').replace('.', '')
+            download_filename = f"{location_clean}{file_suffix}"
+        else:
+            download_filename = f"{filename.split('.')[0]}_{datetime.now().strftime(FILE_CONFIG['DATE_FORMAT_SUFFIX'])}.{filename.split('.')[1]}"
+
         return send_file(
             io.BytesIO(buffer_data),
             mimetype=mimetype,
             as_attachment=True,
-            download_name=f"{filename.split('.')[0]}_{datetime.now().strftime(FILE_CONFIG['DATE_FORMAT_SUFFIX'])}.{filename.split('.')[1]}"
+            download_name=download_filename
         )
 
     except Exception as e:

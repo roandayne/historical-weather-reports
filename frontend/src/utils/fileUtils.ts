@@ -11,10 +11,19 @@ export const downloadFile = async (filename: string): Promise<void> => {
       }
     );
 
+    let downloadFilename = filename;
+    const contentDisposition = response.headers['content-disposition'];
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (filenameMatch && filenameMatch[1]) {
+        downloadFilename = filenameMatch[1].replace(/['"]/g, '');
+      }
+    }
+
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', filename);
+    link.setAttribute('download', downloadFilename);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
