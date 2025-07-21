@@ -5,6 +5,5 @@ matplotlib
 fpdf
 openpyxl 
 geopy 
-cartopy 
 xlsxwriter 
 flask-cors 

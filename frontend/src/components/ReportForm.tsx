@@ -3,7 +3,11 @@ import { Dayjs } from 'dayjs';
 import type { PlaceType } from '../types/weather';
 import { LocationAutocomplete } from './LocationAutocomplete';
 import { DateRangePicker } from './DateRangePicker';
-import { formPaperStyles, formContainerStyles } from '../styles/GenerateReports.styles';
+import {
+  formPaperStyles,
+  formContainerStyles,
+} from '../styles/GenerateReports.styles';
+import { generateButtonStyles } from '../styles/ReportForm.styles';
 import { formatDateForBackend } from '../utils/fileUtils';
 import type { FC } from 'react';
 import { ERROR_MESSAGES } from '../constants';
@@ -21,7 +25,11 @@ interface ReportFormProps {
   onUseMyLocation: () => void;
   onStartDateChange: (date: Dayjs | null) => void;
   onEndDateChange: (date: Dayjs | null) => void;
-  onGenerateReport: (data: { location: string; startDate: string; endDate: string; }) => void;
+  onGenerateReport: (data: {
+    location: string;
+    startDate: string;
+    endDate: string;
+  }) => void;
   onShowAlert: (type: 'error' | 'success', message: string) => void;
 }
 
@@ -46,7 +54,7 @@ export const ReportForm: FC<ReportFormProps> = ({
       onGenerateReport({
         location,
         startDate: formatDateForBackend(startDate),
-        endDate: formatDateForBackend(endDate)
+        endDate: formatDateForBackend(endDate),
       });
     } else {
       onShowAlert('error', ERROR_MESSAGES.VALIDATION.MISSING_LOCATION);
@@ -72,19 +80,17 @@ export const ReportForm: FC<ReportFormProps> = ({
           onStartDateChange={onStartDateChange}
           onEndDateChange={onEndDateChange}
         />
-          
-        <Button 
-          variant="contained" 
-          color="primary" 
+
+        <Button
+          variant='contained'
+          color='primary'
           onClick={handleGenerateReport}
           disabled={isGenerating || !location || !startDate || !endDate}
-          sx={{
-            borderRadius: '12px'
-          }}
+          sx={generateButtonStyles}
         >
           {isGenerating ? 'Generating...' : 'Generate Report'}
         </Button>
       </Box>
     </Paper>
   );
-}; 
+};

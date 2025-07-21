@@ -1,7 +1,14 @@
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Box, Typography, CircularProgress, Tooltip } from '@mui/material';
 import { DeviceThermostat, WaterDrop, Opacity, Air } from '@mui/icons-material';
 import { useCurrentWeather } from '../hooks/useCurrentWeather';
 import type { FC } from 'react';
+import {
+  containerStyles,
+  titleStyles,
+  weatherDataContainerStyles,
+  weatherItemStyles,
+  iconStyles,
+} from '../styles/CurrentWeather.styles';
 
 interface CurrentWeatherProps {
   lat?: string;
@@ -9,11 +16,18 @@ interface CurrentWeatherProps {
   location: string;
 }
 
-export const CurrentWeather: FC<CurrentWeatherProps> = ({ lat, lon, location }) => {
-  const coordinates = lat && lon ? {
-    lat: parseFloat(lat),
-    lon: parseFloat(lon)
-  } : null;
+export const CurrentWeather: FC<CurrentWeatherProps> = ({
+  lat,
+  lon,
+  location,
+}) => {
+  const coordinates =
+    lat && lon
+      ? {
+          lat: parseFloat(lat),
+          lon: parseFloat(lon),
+        }
+      : null;
 
   const { weather, isLoading, error } = useCurrentWeather(coordinates);
 
@@ -22,39 +36,36 @@ export const CurrentWeather: FC<CurrentWeatherProps> = ({ lat, lon, location }) 
   if (error || !weather) return null;
 
   return (
-    <Box sx={{ 
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 2,
-      color: 'text.primary'
-    }}>
-      <Typography variant="h6" sx={{ textAlign: 'center' }}>
+    <Box sx={containerStyles}>
+      <Typography variant='h6' sx={titleStyles}>
         Current Weather in {location}
       </Typography>
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        flexWrap: 'wrap',
-        gap: 4
-      }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DeviceThermostat sx={{ fontSize: 24 }} />
-          <Typography>{weather.temp}°C</Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WaterDrop sx={{ fontSize: 24 }} />
-          <Typography>{weather.humidity}%</Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Opacity sx={{ fontSize: 24 }} />
-          <Typography>{weather.precipitation}mm</Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Air sx={{ fontSize: 24 }} />
-          <Typography>{weather.wind_speed}m/s</Typography>
-        </Box>
+      <Box sx={weatherDataContainerStyles}>
+        <Tooltip title='Temperature' arrow>
+          <Box sx={weatherItemStyles}>
+            <DeviceThermostat sx={iconStyles} />
+            <Typography>{weather.temp}°C</Typography>
+          </Box>
+        </Tooltip>
+        <Tooltip title='Humidity' arrow>
+          <Box sx={weatherItemStyles}>
+            <WaterDrop sx={iconStyles} />
+            <Typography>{weather.humidity}%</Typography>
+          </Box>
+        </Tooltip>
+        <Tooltip title='Precipitation' arrow>
+          <Box sx={weatherItemStyles}>
+            <Opacity sx={iconStyles} />
+            <Typography>{weather.precipitation}mm</Typography>
+          </Box>
+        </Tooltip>
+        <Tooltip title='Wind Speed' arrow>
+          <Box sx={weatherItemStyles}>
+            <Air sx={iconStyles} />
+            <Typography>{weather.wind_speed}m/s</Typography>
+          </Box>
+        </Tooltip>
       </Box>
     </Box>
   );
-}; 
+};

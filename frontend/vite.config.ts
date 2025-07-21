@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,16 +12,16 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://backend:5000',
-        changeOrigin: true
-      }
-    }
+        changeOrigin: true,
+      },
+    },
   },
   optimizeDeps: {
     include: [
       '@tanstack/react-query',
       '@mui/x-date-pickers',
       '@mui/x-date-pickers/AdapterDayjs',
-      'dayjs'
-    ]
-  }
-})
+      'dayjs',
+    ],
+  },
+});

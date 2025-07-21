@@ -9,7 +9,11 @@ interface Coordinates {
 }
 
 export const useCurrentWeather = (coordinates: Coordinates | null) => {
-  const { data: weather, isLoading, error } = useQuery<WeatherInfo, Error>({
+  const {
+    data: weather,
+    isLoading,
+    error,
+  } = useQuery<WeatherInfo, Error>({
     queryKey: ['currentWeather', coordinates?.lat, coordinates?.lon],
     queryFn: async () => {
       if (!coordinates) throw new Error('Coordinates required');
@@ -20,8 +24,8 @@ export const useCurrentWeather = (coordinates: Coordinates | null) => {
     gcTime: UI_CONFIG.WEATHER_GC_TIME,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    retry: UI_CONFIG.DEFAULT_RETRY_COUNT
+    retry: UI_CONFIG.DEFAULT_RETRY_COUNT,
   });
 
   return { weather, isLoading, error };
-}; 
+};

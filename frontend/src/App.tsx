@@ -1,6 +1,6 @@
-import './App.css'
-import Dashboard from './pages/Dashboard'
-import PublicPage from './components/PublicPage'
+import './App.css';
+import Dashboard from './pages/Dashboard';
+import PublicPage from './components/PublicPage';
 
 function App() {
   return (
@@ -9,7 +9,7 @@ function App() {
         <Dashboard />
       </PublicPage>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

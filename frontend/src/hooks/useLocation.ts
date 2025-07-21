@@ -16,12 +16,17 @@ interface Coordinates {
   lon: number;
 }
 
-export const useLocation = (showAlert: (type: AlertState['type'], message: string) => void) => {
+export const useLocation = (
+  showAlert: (type: AlertState['type'], message: string) => void
+) => {
   const [location, setLocation] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
-  
-  const debouncedInput = useDebounce(inputValue, UI_CONFIG.SEARCH_DEBOUNCE_DELAY);
+
+  const debouncedInput = useDebounce(
+    inputValue,
+    UI_CONFIG.SEARCH_DEBOUNCE_DELAY
+  );
 
   const { data: reverseGeocodeData } = useQuery({
     queryKey: ['reverseGeocode', coordinates?.lat, coordinates?.lon],
@@ -29,7 +34,7 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
       if (!coordinates) return null;
       try {
         const response = await apiClient.get(API_ENDPOINTS.REVERSE_GEOCODE, {
-          params: { lat: coordinates.lat, lon: coordinates.lon }
+          params: { lat: coordinates.lat, lon: coordinates.lon },
         });
         return response.data;
       } catch (error) {
@@ -41,7 +46,7 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
     },
     enabled: !!coordinates?.lat && !!coordinates?.lon,
     staleTime: Infinity,
-    retry: UI_CONFIG.DEFAULT_RETRY_COUNT
+    retry: UI_CONFIG.DEFAULT_RETRY_COUNT,
   });
 
   useEffect(() => {
@@ -55,9 +60,12 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
     queryFn: async () => {
       if (debouncedInput.length < UI_CONFIG.MIN_SEARCH_LENGTH) return [];
       try {
-        const response = await apiClient.get<PlaceType[]>(API_ENDPOINTS.GEOCODE, {
-          params: { q: debouncedInput }
-        });
+        const response = await apiClient.get<PlaceType[]>(
+          API_ENDPOINTS.GEOCODE,
+          {
+            params: { q: debouncedInput },
+          }
+        );
         return response.data;
       } catch (error) {
         if (error instanceof Error) {
@@ -72,7 +80,7 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
     retry: UI_CONFIG.DEFAULT_RETRY_COUNT,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    placeholderData: []
+    placeholderData: [],
   });
 
   const handleUseMyLocation = () => {
@@ -83,14 +91,14 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      position => {
         const { latitude, longitude } = position.coords;
         setCoordinates(null);
         setTimeout(() => {
           setCoordinates({ lat: latitude, lon: longitude });
         }, 0);
       },
-      (error) => {
+      error => {
         console.error('Error getting geolocation:', error);
         showAlert('error', `Error: ${error.message}`);
       }
@@ -105,6 +113,6 @@ export const useLocation = (showAlert: (type: AlertState['type'], message: strin
     options: geocodeData || [],
     loading: isLoading,
     coordinates,
-    handleUseMyLocation
+    handleUseMyLocation,
   };
-}; 
+};

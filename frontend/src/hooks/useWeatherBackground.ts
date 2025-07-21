@@ -8,4 +8,4 @@ interface Coordinates {
 export const useWeatherBackground = (coordinates: Coordinates | null) => {
   const { weather } = useCurrentWeather(coordinates);
   return { weather };
-}; 
+};

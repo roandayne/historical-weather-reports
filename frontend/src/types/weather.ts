@@ -26,4 +26,4 @@ export interface WeatherInfo {
   precipitation: number;
   wind_speed: number;
   time: string;
-} 
+}

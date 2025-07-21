@@ -1,8 +1,25 @@
-import { Box, FormControl, InputLabel, MenuItem, Select, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { useState, type FC, type MouseEvent } from 'react';
+import {
+  containerStyles,
+  toggleButtonGroupStyles,
+  datePickerRowStyles,
+  datePickerStyles,
+  selectStyles,
+  monthYearContainerStyles,
+  monthYearFormControlStyles,
+} from '../styles/DateRangePicker.styles';
 
 interface DateRangePickerProps {
   startDate: Dayjs | null;
@@ -17,7 +34,7 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
   startDate,
   endDate,
   onStartDateChange,
-  onEndDateChange
+  onEndDateChange,
 }) => {
   const [filterType, setFilterType] = useState<FilterType>('custom');
   const currentYear = dayjs().year();
@@ -26,11 +43,14 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
     const date = dayjs().month(i);
     return {
       value: i,
-      label: date.format('MMMM')
+      label: date.format('MMMM'),
     };
   });
 
-  const handleFilterTypeChange = (_: MouseEvent<HTMLElement>, newFilterType: FilterType | null) => {
+  const handleFilterTypeChange = (
+    _: MouseEvent<HTMLElement>,
+    newFilterType: FilterType | null
+  ) => {
     if (newFilterType) {
       setFilterType(newFilterType);
       onStartDateChange(null);
@@ -53,77 +73,37 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
   };
 
   return (
-    <Box sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '10px',
-      width: '100%',
-    }}>
+    <Box sx={containerStyles}>
       <ToggleButtonGroup
         value={filterType}
         exclusive
         onChange={handleFilterTypeChange}
-        aria-label="filter type"
+        aria-label='filter type'
         fullWidth
-        sx={{
-          '& .MuiToggleButton-root': {
-            borderRadius: '12px !important',
-          },
-          display: 'flex',
-          flexDirection: 'row',
-          gap: '10px',
-          width: '100%',
-        }}
+        sx={toggleButtonGroupStyles}
       >
-        <ToggleButton value="custom" aria-label="custom date range">
+        <ToggleButton value='custom' aria-label='custom date range'>
           Custom Range
         </ToggleButton>
-        <ToggleButton value="year" aria-label="yearly filter">
+        <ToggleButton value='year' aria-label='yearly filter'>
           Yearly
         </ToggleButton>
-        <ToggleButton value="month" aria-label="monthly filter">
+        <ToggleButton value='month' aria-label='monthly filter'>
           Monthly
         </ToggleButton>
       </ToggleButtonGroup>
 
       {filterType === 'custom' && (
-        <Box sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          gap: '10px',
-          width: '100%',
-        }}>
+        <Box sx={datePickerRowStyles}>
           <DatePicker
-            sx={{ 
-              width: '100%',
-              '& .MuiInputBase-root': {
-                borderRadius: '12px'
-              },
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '12px'
-              },
-              '& fieldset': {
-                borderRadius: '12px'
-              }
-            }}
-            label="Start Date"
+            sx={datePickerStyles}
+            label='Start Date'
             value={startDate}
             onChange={onStartDateChange}
           />
           <DatePicker
-            sx={{ 
-              width: '100%',
-              '& .MuiInputBase-root': {
-                borderRadius: '12px'
-              },
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '12px'
-              },
-              '& fieldset': {
-                borderRadius: '12px'
-              }
-            }}
-            label="End Date"
+            sx={datePickerStyles}
+            label='End Date'
             value={endDate}
             onChange={onEndDateChange}
           />
@@ -132,20 +112,16 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
 
       {filterType === 'year' && (
         <FormControl fullWidth>
-          <InputLabel id="year-select-label">Select Year</InputLabel>
+          <InputLabel id='year-select-label'>Select Year</InputLabel>
           <Select
-            labelId="year-select-label"
-            id="year-select"
-            label="Select Year"
+            labelId='year-select-label'
+            id='year-select'
+            label='Select Year'
             value={startDate ? startDate.year() : ''}
-            onChange={(e) => handleYearChange(Number(e.target.value))}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '12px'
-              }
-            }}
+            onChange={e => handleYearChange(Number(e.target.value))}
+            sx={selectStyles}
           >
-            {years.map((year) => (
+            {years.map(year => (
               <MenuItem key={year} value={year}>
                 {year}
               </MenuItem>
@@ -155,48 +131,45 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
       )}
 
       {filterType === 'month' && (
-        <Box sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          gap: '10px',
-          width: '100%',
-        }}>
-          <FormControl sx={{ width: '50%' }}>
-            <InputLabel id="month-year-select-label">Select Year</InputLabel>
+        <Box sx={monthYearContainerStyles}>
+          <FormControl sx={monthYearFormControlStyles}>
+            <InputLabel id='month-year-select-label'>Select Year</InputLabel>
             <Select
-              labelId="month-year-select-label"
-              id="month-year-select"
-              label="Select Year"
+              labelId='month-year-select-label'
+              id='month-year-select'
+              label='Select Year'
               value={startDate ? startDate.year() : ''}
-              onChange={(e) => handleMonthYearChange(Number(e.target.value), startDate?.month() || 0)}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '12px'
-                }
-              }}
+              onChange={e =>
+                handleMonthYearChange(
+                  Number(e.target.value),
+                  startDate?.month() || 0
+                )
+              }
+              sx={selectStyles}
             >
-              {years.map((year) => (
+              {years.map(year => (
                 <MenuItem key={year} value={year}>
                   {year}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <FormControl sx={{ width: '50%' }}>
-            <InputLabel id="month-select-label">Select Month</InputLabel>
+          <FormControl sx={monthYearFormControlStyles}>
+            <InputLabel id='month-select-label'>Select Month</InputLabel>
             <Select
-              labelId="month-select-label"
-              id="month-select"
-              label="Select Month"
+              labelId='month-select-label'
+              id='month-select'
+              label='Select Month'
               value={startDate ? startDate.month() : ''}
-              onChange={(e) => handleMonthYearChange(startDate?.year() || currentYear, Number(e.target.value))}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '12px'
-                }
-              }}
+              onChange={e =>
+                handleMonthYearChange(
+                  startDate?.year() || currentYear,
+                  Number(e.target.value)
+                )
+              }
+              sx={selectStyles}
             >
-              {months.map((month) => (
+              {months.map(month => (
                 <MenuItem key={month.value} value={month.value}>
                   {month.label}
                 </MenuItem>
@@ -207,4 +180,4 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
       )}
     </Box>
   );
-}; 
+};

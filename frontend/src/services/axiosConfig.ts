@@ -9,7 +9,7 @@ interface ErrorResponse {
 const createBaseInstance = (timeout: number): AxiosInstance => {
   const instance = axios.create({
     timeout,
-    headers: API_CONFIG.DEFAULT_HEADERS
+    headers: API_CONFIG.DEFAULT_HEADERS,
   });
 
   instance.interceptors.response.use(
@@ -19,7 +19,11 @@ const createBaseInstance = (timeout: number): AxiosInstance => {
         throw new Error(ERROR_MESSAGES.NETWORK.TIMEOUT);
       }
       if (error.response) {
-        const message = error.response.data?.message || `Server error: ${error.response.status}`;
+        console.log(error.response);
+        const message =
+          error.response.data?.message ||
+          error.response.data?.error ||
+          `Server error: ${error.response.status}`;
         throw new Error(message);
       }
       if (error.request) {
@@ -41,4 +45,4 @@ export const handleApiError = (error: unknown, context: string): never => {
     throw new Error(`${context}: ${error.message}`);
   }
   throw new Error(context);
-}; 
+};

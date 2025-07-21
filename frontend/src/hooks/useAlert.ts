@@ -19,6 +19,6 @@ export const useAlert = () => {
   return {
     alert,
     showAlert,
-    clearAlert
+    clearAlert,
   };
-}; 
+};
