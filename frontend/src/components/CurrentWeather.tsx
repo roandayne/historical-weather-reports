@@ -32,7 +32,7 @@ export const CurrentWeather: FC<CurrentWeatherProps> = ({
   const { weather, isLoading, error } = useCurrentWeather(coordinates);
 
   if (!lat || !lon) return null;
-  if (isLoading) return <CircularProgress />;
+  if (isLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>Loading weather data...</Box>;
   if (error || !weather) return null;
 
   return (

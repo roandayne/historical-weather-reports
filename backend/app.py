@@ -19,6 +19,14 @@ from constants import (
 app = Flask(__name__)
 CORS(app)
 
+def safe_float_convert(value, default=0):
+    if pd.isna(value) or value is None:
+        return default
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return default
+
 class FileStorage:
     def __init__(self):
         self.files = {}
@@ -369,10 +377,10 @@ def current_weather():
             
         latest_data = data.iloc[-1]
         weather_info = {
-            "temp": round(float(latest_data.get('temp', DEFAULTS['TEMPERATURE'])), 1),
-            "humidity": round(float(latest_data.get('rhum', DEFAULTS['HUMIDITY'])), 1),
-            "precipitation": round(float(latest_data.get('prcp', DEFAULTS['PRECIPITATION'])), 1),
-            "wind_speed": round(float(latest_data.get('wspd', DEFAULTS['WIND_SPEED'])), 1),
+            "temp": round(safe_float_convert(latest_data.get('temp'), DEFAULTS['TEMPERATURE']), 1),
+            "humidity": round(safe_float_convert(latest_data.get('rhum'), DEFAULTS['HUMIDITY']), 1),
+            "precipitation": round(safe_float_convert(latest_data.get('prcp'), DEFAULTS['PRECIPITATION']), 1),
+            "wind_speed": round(safe_float_convert(latest_data.get('wspd'), DEFAULTS['WIND_SPEED']), 1),
             "time": latest_data.name.isoformat()
         }
         
