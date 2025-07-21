@@ -92,7 +92,8 @@ cd historical-weather-data
 
 2. **Start the application:**
 ```bash
-docker-compose up
+docker compose build
+docker compose up
 ```
 
 This will:
