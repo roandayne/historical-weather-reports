@@ -29,13 +29,15 @@ const GenerateReports = () => {
     options,
     loading,
     handleUseMyLocation,
+    handleAutoLocationRequest,
     coordinates,
+    isCheckingPermission,
   } = useLocation(showAlert);
   const { weather } = useWeatherBackground(coordinates);
   const { generateReport, isGenerating } = useReportGeneration(showAlert);
 
   useEffect(() => {
-    handleUseMyLocation();
+    handleAutoLocationRequest();
   }, []);
 
   const handleLocationChange = (newValue: PlaceType | string | null) => {
@@ -78,7 +80,7 @@ const GenerateReports = () => {
           location={location}
           inputValue={inputValue}
           options={options}
-          loading={loading}
+          loading={loading || isCheckingPermission}
           startDate={startDate}
           endDate={endDate}
           isGenerating={isGenerating}

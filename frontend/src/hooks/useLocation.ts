@@ -22,11 +22,67 @@ export const useLocation = (
   const [location, setLocation] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
+  const [permissionState, setPermissionState] = useState<PermissionState | null>(null);
+  const [isCheckingPermission, setIsCheckingPermission] = useState(false);
 
   const debouncedInput = useDebounce(
     inputValue,
     UI_CONFIG.SEARCH_DEBOUNCE_DELAY
   );
+
+  const checkGeolocationPermission = async (): Promise<PermissionState> => {
+    try {
+      if ('permissions' in navigator) {
+        const result = await navigator.permissions.query({ name: 'geolocation' });
+        setPermissionState(result.state);
+        return result.state;
+      } else {
+        return 'prompt';
+      }
+    } catch (error) {
+      console.warn('Error checking geolocation permission:', error);
+      return 'prompt';
+    }
+  };
+
+  const getCurrentPosition = (): Promise<GeolocationPosition> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error(ERROR_MESSAGES.GEOLOCATION.NOT_SUPPORTED));
+        return;
+      }
+
+      const options: PositionOptions = {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 300000,
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        position => resolve(position),
+        error => {
+          let errorMessage: string;
+          
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = ERROR_MESSAGES.GEOLOCATION.PERMISSION_DENIED;
+              setPermissionState('denied');
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = ERROR_MESSAGES.GEOLOCATION.POSITION_UNAVAILABLE;
+              break;
+            case error.TIMEOUT:
+              errorMessage = ERROR_MESSAGES.GEOLOCATION.TIMEOUT;
+              break;
+            default:
+              errorMessage = `Geolocation error: ${error.message}`;
+          }
+          reject(new Error(errorMessage));
+        },
+        options
+      );
+    });
+  };
 
   const { data: reverseGeocodeData } = useQuery({
     queryKey: ['reverseGeocode', coordinates?.lat, coordinates?.lon],
@@ -83,26 +139,43 @@ export const useLocation = (
     placeholderData: [],
   });
 
-  const handleUseMyLocation = () => {
-    if (!navigator.geolocation) {
-      showAlert('error', ERROR_MESSAGES.GEOLOCATION.NOT_SUPPORTED);
-      setLocation('Geolocation not supported');
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      position => {
+  const handleAutoLocationRequest = async () => {
+    setIsCheckingPermission(true);
+    try {
+      const permission = await checkGeolocationPermission();
+      
+      if (permission === 'granted') {
+        const position = await getCurrentPosition();
         const { latitude, longitude } = position.coords;
-        setCoordinates(null);
-        setTimeout(() => {
-          setCoordinates({ lat: latitude, lon: longitude });
-        }, 0);
-      },
-      error => {
-        console.error('Error getting geolocation:', error);
-        showAlert('error', `Error: ${error.message}`);
+        setCoordinates({ lat: latitude, lon: longitude });
       }
-    );
+    } catch (error) {
+      console.error('Error in auto location request:', error);
+    } finally {
+      setIsCheckingPermission(false);
+    }
+  };
+
+  const handleUseMyLocation = async () => {
+    try {
+      setIsCheckingPermission(true);
+      const position = await getCurrentPosition();
+      const { latitude, longitude } = position.coords;
+      
+      setCoordinates(null);
+      setTimeout(() => {
+        setCoordinates({ lat: latitude, lon: longitude });
+      }, 0);
+      
+      setPermissionState('granted');
+    } catch (error) {
+      console.error('Error getting geolocation:', error);
+      if (error instanceof Error) {
+        showAlert('error', error.message);
+      }
+    } finally {
+      setIsCheckingPermission(false);
+    }
   };
 
   return {
@@ -113,6 +186,9 @@ export const useLocation = (
     options: geocodeData || [],
     loading: isLoading,
     coordinates,
+    permissionState,
+    isCheckingPermission,
     handleUseMyLocation,
+    handleAutoLocationRequest,
   };
 };
