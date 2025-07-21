@@ -125,7 +125,7 @@ flask run --host=0.0.0.0 --port=5000 --debug
 
 ## How to Use
 
-1. **Select Location**: Use the search box to find a location or click "Use My Location"
+1. **Select Location**: Use the search box to find a location or click location icon at the end of the Location input. Allow the location permission in the browser.
 2. **Choose Date Range**: Select start and end dates (up to 10 years of data)
 3. **Generate Report**: Click "Generate Report" to create Excel and PDF files
 4. **Download Files**: Reports will automatically download when ready
