@@ -2,7 +2,7 @@
 
 A web application for generating comprehensive historical weather reports and analyzing weather patterns for any location worldwide. The application provides detailed weather analysis, current conditions, and exports data in both Excel and PDF formats.
 
-## 🌟 Features
+## Features
 
 ### Historical Weather Analysis
 - **10-year historical data** support (up to 3,650 days)
@@ -28,7 +28,7 @@ A web application for generating comprehensive historical weather reports and an
 - **Smart location search** with geocoding support
 - **Date range validation** and error handling
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 .
@@ -54,7 +54,7 @@ A web application for generating comprehensive historical weather reports and an
 └── README.md
 ```
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 ### Frontend
 - **React 18** - Modern React with hooks
@@ -75,7 +75,7 @@ A web application for generating comprehensive historical weather reports and an
 - **XlsxWriter & OpenPyXL** - Excel file generation
 - **FPDF** - PDF report creation
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - **Docker & Docker Compose** (recommended)
@@ -86,7 +86,7 @@ A web application for generating comprehensive historical weather reports and an
 
 1. **Clone the repository:**
 ```bash
-git clone <repository-url>
+git clone git@github.com:roandayne/historical-weather-reports.git
 cd historical-weather-data
 ```
 
@@ -117,7 +117,7 @@ pip install -r requirements.txt
 flask run --host=0.0.0.0 --port=5000 --debug
 ```
 
-## 📖 How to Use
+## How to Use
 
 1. **Select Location**: Use the search box to find a location or click "Use My Location"
 2. **Choose Date Range**: Select start and end dates (up to 10 years of data)
@@ -132,7 +132,7 @@ flask run --host=0.0.0.0 --port=5000 --debug
 - **Wind Conditions**: Days with wind speeds >40km/h
 - **Lost Days**: Days unsuitable for outdoor activities based on weather conditions
 
-## 🔌 API Endpoints
+## API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -160,7 +160,7 @@ curl -X POST http://localhost:5000/api/weather-data \
 curl "http://localhost:5000/api/current-weather?lat=51.5074&lon=-0.1278"
 ```
 
-## 🐳 Docker Configuration
+## Docker Configuration
 
 ### Frontend Container
 - **Development build** with Vite dev server
@@ -174,7 +174,7 @@ curl "http://localhost:5000/api/current-weather?lat=51.5074&lon=-0.1278"
 - **Port 5000** exposed for API access
 - **Automatic dependency installation**
 
-## 🔧 Development Features
+## Development Features
 
 ### Frontend Development
 - **TypeScript** for type safety
@@ -188,7 +188,7 @@ curl "http://localhost:5000/api/current-weather?lat=51.5074&lon=-0.1278"
 - **CORS enabled** for cross-origin requests
 - **File cleanup** system for temporary reports
 
-## 📊 Performance Optimizations
+## Performance Optimizations
 
 - **Data sampling** for large datasets (>1000 points) in visualizations
 - **File expiry system** (5-minute cleanup) to manage storage
@@ -196,7 +196,7 @@ curl "http://localhost:5000/api/current-weather?lat=51.5074&lon=-0.1278"
 - **Efficient data processing** with pandas vectorization
 - **Memory management** for large weather datasets
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
@@ -204,11 +204,11 @@ curl "http://localhost:5000/api/current-weather?lat=51.5074&lon=-0.1278"
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🌍 Data Sources
+## Data Sources
 
 - **Meteostat**: Historical weather data from meteorological stations worldwide
 - **Nominatim (OpenStreetMap)**: Geocoding and location search services
