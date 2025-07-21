@@ -1,6 +1,6 @@
 # Historical Weather Data
 
-A sophisticated web application for generating comprehensive historical weather reports and analyzing weather patterns for any location worldwide. The application provides detailed weather analysis, current conditions, and exports data in both Excel and PDF formats.
+A web application for generating comprehensive historical weather reports and analyzing weather patterns for any location worldwide. The application provides detailed weather analysis, current conditions, and exports data in both Excel and PDF formats.
 
 ## 🌟 Features
 
