@@ -101,7 +101,7 @@ This will:
 - Set up hot-reloading for both services
 - Handle all dependencies automatically
 
-### Local Development Setup
+### Alternative: Local Development Setup
 
 #### Frontend Setup
 ```bash
