@@ -92,7 +92,7 @@ cd historical-weather-data
 or
 ```bash
 git clone https://github.com/roandayne/historical-weather-reports.git
-cd historical-weather-data
+cd historical-weather-reports
 ```
 
 2. **Start the application:**
