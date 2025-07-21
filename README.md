@@ -86,7 +86,12 @@ A web application for generating comprehensive historical weather reports and an
 
 1. **Clone the repository:**
 ```bash
-git clone git@github.com:roandayne/historical-weather-reports.git // or git clone https://github.com/roandayne/historical-weather-reports.git
+git clone git@github.com:roandayne/historical-weather-reports.git
+cd historical-weather-data
+```
+or
+```bash
+git clone https://github.com/roandayne/historical-weather-reports.git
 cd historical-weather-data
 ```
 
