@@ -4,6 +4,7 @@ import { API_CONFIG, ERROR_MESSAGES } from '../constants';
 
 interface ErrorResponse {
   message?: string;
+  error?: string;
 }
 
 const createBaseInstance = (timeout: number): AxiosInstance => {
@@ -39,6 +40,8 @@ const createBaseInstance = (timeout: number): AxiosInstance => {
 export const apiClient = createBaseInstance(API_CONFIG.DEFAULT_TIMEOUT);
 
 export const fileClient = createBaseInstance(API_CONFIG.FILE_DOWNLOAD_TIMEOUT);
+
+export const geocodingClient = createBaseInstance(API_CONFIG.GEOCODING_TIMEOUT);
 
 export const handleApiError = (error: unknown, context: string): never => {
   if (error instanceof Error) {

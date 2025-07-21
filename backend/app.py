@@ -53,12 +53,17 @@ class FileStorage:
 file_storage = FileStorage()
 
 def get_coordinates(location_name):
-    geolocator = Nominatim(user_agent=API_CONFIG['USER_AGENT'])
-    location = geolocator.geocode(location_name)
-    if location:
-        return location.latitude, location.longitude
-    else:
-        raise ValueError(ERROR_MESSAGES['VALIDATION']['LOCATION_NOT_FOUND'].format(location_name))
+    try:
+        geolocator = Nominatim(user_agent=API_CONFIG['USER_AGENT'], timeout=API_CONFIG['NOMINATIM_TIMEOUT'])
+        location = geolocator.geocode(location_name, timeout=API_CONFIG['NOMINATIM_TIMEOUT'])
+        if location:
+            return location.latitude, location.longitude
+        else:
+            raise ValueError(ERROR_MESSAGES['VALIDATION']['LOCATION_NOT_FOUND'].format(location_name))
+    except Exception as e:
+        if 'timeout' in str(e).lower() or 'timed out' in str(e).lower():
+            raise ValueError("Service timed out")
+        raise e
 
 def get_nearest_station(lat, lon):
     stations = Stations()
@@ -290,8 +295,8 @@ def reverse_geocode():
         return jsonify({"error": ERROR_MESSAGES['VALIDATION']['MISSING_COORDINATES']}), 400
         
     try:
-        geolocator = Nominatim(user_agent=API_CONFIG['USER_AGENT'])
-        location = geolocator.reverse((float(lat), float(lon)), language='en')
+        geolocator = Nominatim(user_agent=API_CONFIG['USER_AGENT'], timeout=API_CONFIG['NOMINATIM_TIMEOUT'])
+        location = geolocator.reverse((float(lat), float(lon)), language='en', timeout=API_CONFIG['NOMINATIM_TIMEOUT'])
         
         if location and location.raw.get('address'):
             address = location.raw['address']
@@ -311,6 +316,8 @@ def reverse_geocode():
             return jsonify({"error": "Location not found"}), 404
             
     except Exception as e:
+        if 'timeout' in str(e).lower() or 'timed out' in str(e).lower():
+            return jsonify({"error": "Service timed out"}), 408
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/geocode', methods=['GET'])
@@ -321,8 +328,8 @@ def geocode():
         return jsonify({"error": ERROR_MESSAGES['VALIDATION']['MISSING_SEARCH_QUERY']}), 400
         
     try:
-        geolocator = Nominatim(user_agent=API_CONFIG['USER_AGENT'])
-        locations = geolocator.geocode(query, exactly_one=False, limit=API_CONFIG['GEOCODE_RESULT_LIMIT'])
+        geolocator = Nominatim(user_agent=API_CONFIG['USER_AGENT'], timeout=API_CONFIG['NOMINATIM_TIMEOUT'])
+        locations = geolocator.geocode(query, exactly_one=False, limit=API_CONFIG['GEOCODE_RESULT_LIMIT'], timeout=API_CONFIG['NOMINATIM_TIMEOUT'])
         
         if locations:
             results = []
@@ -337,6 +344,8 @@ def geocode():
             return jsonify([])
             
     except Exception as e:
+        if 'timeout' in str(e).lower() or 'timed out' in str(e).lower():
+            return jsonify({"error": "Service timed out"}), 408
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/current-weather', methods=['GET'])

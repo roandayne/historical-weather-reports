@@ -12,7 +12,7 @@ export const getWeatherBackground = (weather: WeatherInfo) => {
     sunny:
       'https://images.unsplash.com/photo-1561484930-998b6a7b22e8?auto=format&fit=crop&q=80',
     misty:
-      'https://images.unsplash.com/photo-1485249245068-d8dc50b77cc7?auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1543968996-ee822b8176ba?auto=format&fit=crop&q=80',
   };
 
   const { temp, precipitation, humidity } = weather;

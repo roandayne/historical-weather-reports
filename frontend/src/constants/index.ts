@@ -1,6 +1,7 @@
 export const API_CONFIG = {
   DEFAULT_TIMEOUT: 30000,
   FILE_DOWNLOAD_TIMEOUT: 60000,
+  GEOCODING_TIMEOUT: 60000,
 
   BASE_URL: '/api',
   BACKEND_URL: 'http://backend:5000',
@@ -36,6 +37,7 @@ export const UI_CONFIG = {
   WEATHER_GC_TIME: 10 * 60 * 1000,
 
   DEFAULT_RETRY_COUNT: 1,
+  GEOCODING_RETRY_COUNT: 2,
 
   GEOCODE_RESULT_LIMIT: 5,
 } as const;
@@ -81,7 +83,7 @@ export const WEATHER_THRESHOLDS = {
     MODERATE: 10, // m/s
     HIGH: 15, // m/s
     VERY_HIGH: 20, // m/s
-    EXTREME: 40, // km/h (for different analysis)
+    EXTREME: 40, // km/h
   },
 } as const;
 
@@ -100,6 +102,11 @@ export const ERROR_MESSAGES = {
     NO_WEATHER_STATIONS:
       'No weather stations found nearby. Try a different location.',
     NO_WEATHER_DATA: 'No weather data available for the specified date range.',
+  },
+  GEOCODING: {
+    TIMEOUT: 'Location search timed out. Please try again or use a simpler search term.',
+    REVERSE_TIMEOUT: 'Location lookup timed out. Please try again.',
+    SERVICE_UNAVAILABLE: 'Location service is temporarily unavailable. Please try again later.',
   },
   GEOLOCATION: {
     NOT_SUPPORTED: 'Geolocation is not supported by this browser.',

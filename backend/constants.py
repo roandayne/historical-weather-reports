@@ -3,7 +3,8 @@ API_CONFIG = {
     'FILE_EXPIRY_MINUTES': 5,
     'FILE_EXPIRY_SECONDS': 300,
     'GEOCODE_RESULT_LIMIT': 5,
-    'HOURLY_DATA_WINDOW_HOURS': 1
+    'HOURLY_DATA_WINDOW_HOURS': 1,
+    'NOMINATIM_TIMEOUT': 30
 }
 
 PERFORMANCE_CONFIG = {
@@ -38,7 +39,7 @@ WEATHER_THRESHOLDS = {
         'MODERATE': 10,          # m/s
         'HIGH': 15,              # m/s
         'VERY_HIGH': 20,         # m/s
-        'EXTREME_KMH': 40        # km/h (for different analysis)
+        'EXTREME_KMH': 40        # km/h
     }
 }
 

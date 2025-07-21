@@ -3,7 +3,7 @@ import type { AlertState } from './useAlert';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from './useDebounce';
 import { API_ENDPOINTS, UI_CONFIG, ERROR_MESSAGES } from '../constants';
-import { apiClient } from '../services/axiosConfig';
+import { apiClient, geocodingClient } from '../services/axiosConfig';
 
 interface PlaceType {
   display_name: string;
@@ -88,21 +88,36 @@ export const useLocation = (
     queryKey: ['reverseGeocode', coordinates?.lat, coordinates?.lon],
     queryFn: async () => {
       if (!coordinates) return null;
+
+      if (isNaN(coordinates.lat) || isNaN(coordinates.lon) || 
+          !isFinite(coordinates.lat) || !isFinite(coordinates.lon)) {
+        console.warn('Invalid coordinates for reverse geocoding:', coordinates);
+        return null;
+      }
+      
       try {
-        const response = await apiClient.get(API_ENDPOINTS.REVERSE_GEOCODE, {
+        const response = await geocodingClient.get(API_ENDPOINTS.REVERSE_GEOCODE, {
           params: { lat: coordinates.lat, lon: coordinates.lon },
         });
         return response.data;
       } catch (error) {
         if (error instanceof Error) {
-          showAlert('error', `Failed to get location: ${error.message}`);
+          const errorMessage = error.message.includes('timeout') 
+            ? ERROR_MESSAGES.GEOCODING.REVERSE_TIMEOUT
+            : `Failed to get location: ${error.message}`;
+          showAlert('error', errorMessage);
         }
         throw error;
       }
     },
-    enabled: !!coordinates?.lat && !!coordinates?.lon,
+    enabled: !!coordinates?.lat && 
+             !!coordinates?.lon && 
+             !isNaN(coordinates.lat) && 
+             !isNaN(coordinates.lon) &&
+             isFinite(coordinates.lat) && 
+             isFinite(coordinates.lon),
     staleTime: Infinity,
-    retry: UI_CONFIG.DEFAULT_RETRY_COUNT,
+    retry: UI_CONFIG.GEOCODING_RETRY_COUNT,
   });
 
   useEffect(() => {
@@ -116,7 +131,7 @@ export const useLocation = (
     queryFn: async () => {
       if (debouncedInput.length < UI_CONFIG.MIN_SEARCH_LENGTH) return [];
       try {
-        const response = await apiClient.get<PlaceType[]>(
+        const response = await geocodingClient.get<PlaceType[]>(
           API_ENDPOINTS.GEOCODE,
           {
             params: { q: debouncedInput },
@@ -125,7 +140,10 @@ export const useLocation = (
         return response.data;
       } catch (error) {
         if (error instanceof Error) {
-          showAlert('error', `Search error: ${error.message}`);
+          const errorMessage = error.message.includes('timeout') 
+            ? ERROR_MESSAGES.GEOCODING.TIMEOUT
+            : `Search error: ${error.message}`;
+          showAlert('error', errorMessage);
         }
         throw error;
       }
@@ -133,7 +151,7 @@ export const useLocation = (
     enabled: debouncedInput.length >= UI_CONFIG.MIN_SEARCH_LENGTH,
     staleTime: UI_CONFIG.SEARCH_STALE_TIME,
     gcTime: UI_CONFIG.SEARCH_GC_TIME,
-    retry: UI_CONFIG.DEFAULT_RETRY_COUNT,
+    retry: UI_CONFIG.GEOCODING_RETRY_COUNT,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     placeholderData: [],
@@ -178,6 +196,23 @@ export const useLocation = (
     }
   };
 
+  const setLocationAndCoordinates = (locationName: string, coords?: { lat: string; lon: string }) => {
+    setLocation(locationName);
+    if (coords) {
+      const lat = parseFloat(coords.lat);
+      const lon = parseFloat(coords.lon);
+      
+      if (!isNaN(lat) && !isNaN(lon) && isFinite(lat) && isFinite(lon)) {
+        setCoordinates({
+          lat,
+          lon,
+        });
+      } else {
+        console.warn('Invalid coordinates received:', coords);
+      }
+    }
+  };
+
   return {
     location,
     setLocation,
@@ -190,5 +225,6 @@ export const useLocation = (
     isCheckingPermission,
     handleUseMyLocation,
     handleAutoLocationRequest,
+    setLocationAndCoordinates,
   };
 };

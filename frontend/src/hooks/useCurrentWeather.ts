@@ -17,9 +17,20 @@ export const useCurrentWeather = (coordinates: Coordinates | null) => {
     queryKey: ['currentWeather', coordinates?.lat, coordinates?.lon],
     queryFn: async () => {
       if (!coordinates) throw new Error('Coordinates required');
+
+      if (isNaN(coordinates.lat) || isNaN(coordinates.lon) || 
+          !isFinite(coordinates.lat) || !isFinite(coordinates.lon)) {
+        throw new Error('Invalid coordinates provided');
+      }
+      
       return weatherApi.getCurrentWeather(coordinates.lat, coordinates.lon);
     },
-    enabled: !!coordinates?.lat && !!coordinates?.lon,
+    enabled: !!coordinates?.lat && 
+             !!coordinates?.lon && 
+             !isNaN(coordinates.lat) && 
+             !isNaN(coordinates.lon) &&
+             isFinite(coordinates.lat) && 
+             isFinite(coordinates.lon),
     staleTime: UI_CONFIG.WEATHER_STALE_TIME,
     gcTime: UI_CONFIG.WEATHER_GC_TIME,
     refetchOnMount: false,

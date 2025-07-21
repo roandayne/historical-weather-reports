@@ -32,6 +32,7 @@ const GenerateReports = () => {
     handleAutoLocationRequest,
     coordinates,
     isCheckingPermission,
+    setLocationAndCoordinates,
   } = useLocation(showAlert);
   const { weather } = useWeatherBackground(coordinates);
   const { generateReport, isGenerating } = useReportGeneration(showAlert);
@@ -44,7 +45,10 @@ const GenerateReports = () => {
     if (typeof newValue === 'string') {
       setLocation(newValue);
     } else if (newValue) {
-      setLocation(newValue.display_name);
+      setLocationAndCoordinates(newValue.display_name, {
+        lat: newValue.lat,
+        lon: newValue.lon,
+      });
     } else {
       setLocation('');
     }

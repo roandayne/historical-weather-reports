@@ -68,7 +68,9 @@ export const LocationAutocomplete: FC<LocationAutocompleteProps> = ({
       loading={loading}
       value={location}
       noOptionsText={
-        inputValue.length < UI_CONFIG.MIN_SEARCH_LENGTH
+        loading
+          ? 'Searching locations...'
+          : inputValue.length < UI_CONFIG.MIN_SEARCH_LENGTH
           ? `Type at least ${UI_CONFIG.MIN_SEARCH_LENGTH} characters`
           : 'No locations found'
       }
